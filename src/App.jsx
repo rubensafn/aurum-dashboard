@@ -1,37 +1,42 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 /* ─── BRAND TOKENS ─── */
 const C = {
-  accent:    "#E040FB",
-  accentDim: "#E040FB18",
-  bg:        "#090310",
-  surface:   "#120520",
-  card:      "#1A0830",
-  cardHi:    "#220D3D",
-  border:    "#2D1050",
-  borderHi:  "#4A1A80",
-  text1:     "#F0EAFF",
-  text2:     "#7B6A96",
-  text3:     "#3D2B5A",
-  danger:    "#FF4444",
-  warn:      "#F59E0B",
-  info:      "#A78BFA",
-  success:   "#4ADE80",
-  font:      "'Brinnan', 'Segoe UI', sans-serif",
-  fontBody:  "'Brinnan', 'Segoe UI', sans-serif",
+  accent:    "#C9A94F",
+  accentHi:  "#DAA520",
+  accentDim: "#C9A94F18",
+  bg:        "#0C0B09",
+  surface:   "#14120E",
+  card:      "#1B1915",
+  cardHi:    "#24211B",
+  border:    "#2E2A21",
+  borderHi:  "#4A4130",
+  text1:     "#F3EFE9",
+  text2:     "#A39A88",
+  text3:     "#5E5747",
+  champagne: "#E9D0A3",
+  wine:      "#C0566F",
+  forest:    "#5FA597",
+  danger:    "#E0566B",
+  warn:      "#E8961E",
+  info:      "#5FA597",
+  success:   "#7FBF8E",
+  display:   "'Cinzel', Georgia, serif",
+  font:      "'Inter', system-ui, sans-serif",
+  fontBody:  "'Inter', system-ui, sans-serif",
 };
 
 /* ─── STATUSES ─── */
 const STATUSES = [
   {id:"backlog",    label:"Backlog",        color:"#3A3A3A", bg:"#111",    icon:"○"},
-  {id:"briefing",   label:"Briefing",       color:"#818CF8", bg:"#13133A", icon:"📋"},
-  {id:"planejando", label:"Planejando",     color:"#A78BFA", bg:"#0A0828", icon:"🗂"},
-  {id:"andamento",  label:"Em andamento",   color:"#E040FB", bg:"#1A0028", icon:"⚡"},
+  {id:"briefing",   label:"Briefing",       color:"#5FA597", bg:"#0A1F1D", icon:"📋"},
+  {id:"planejando", label:"Planejando",     color:"#9FB6C9", bg:"#0F161C", icon:"🗂"},
+  {id:"andamento",  label:"Em andamento",   color:"#DAA520", bg:"#1F1806", icon:"⚡"},
   {id:"producao",   label:"Em produção",    color:"#F59E0B", bg:"#1A1000", icon:"🎬"},
   {id:"revisao",    label:"Em revisão",     color:"#F97316", bg:"#1A0C00", icon:"👁"},
-  {id:"aprovacao",  label:"Ag. aprovação",  color:"#C084FC", bg:"#160828", icon:"⏳"},
-  {id:"ajustes",    label:"Ajustes",        color:"#FB7185", bg:"#220810", icon:"✏️"},
+  {id:"aprovacao",  label:"Ag. aprovação",  color:"#E9D0A3", bg:"#1E1810", icon:"⏳"},
+  {id:"ajustes",    label:"Ajustes",        color:"#C0566F", bg:"#220A10", icon:"✏️"},
   {id:"concluido",  label:"Concluído",      color:"#4ADE80", bg:"#081A08", icon:"✓"},
   {id:"pausado",    label:"Pausado",        color:"#666",    bg:"#111",    icon:"⏸"},
   {id:"cancelado",  label:"Cancelado",      color:"#FF4444", bg:"#1A0404", icon:"✕"},
@@ -39,14 +44,14 @@ const STATUSES = [
 
 const PRIORITY = [
   {id:"urgente", label:"Urgente", color:"#FF4444", bg:"#220404", icon:"🔴"},
-  {id:"normal",  label:"Normal",  color:"#E040FB", bg:"#1A0028", icon:"🟣"},
+  {id:"normal",  label:"Normal",  color:"#DAA520", bg:"#1F1806", icon:"🟡"},
   {id:"baixa",   label:"Baixa",   color:"#444",    bg:"#111",    icon:"⚪"},
 ];
 
 const CONTENT_STATUS = [
   {id:"ideia",     label:"Ideia",     color:"#555",    bg:"#111"},
-  {id:"rascunho",  label:"Rascunho",  color:"#A78BFA", bg:"#0A0828"},
-  {id:"agendado",  label:"Agendado",  color:"#E040FB", bg:"#1A0028"},
+  {id:"rascunho",  label:"Rascunho",  color:"#9FB6C9", bg:"#0F161C"},
+  {id:"agendado",  label:"Agendado",  color:"#DAA520", bg:"#1F1806"},
   {id:"publicado", label:"Publicado", color:"#4ADE80", bg:"#081A08"},
 ];
 
@@ -57,148 +62,125 @@ const PLATFORMS = [
   {id:"facebook",  label:"Facebook",  color:"#1877F2"},
 ];
 
-/* ─── NEWS CATEGORIES (cinema-focused) ─── */
+/* ─── NEWS CATEGORIES (mesmas chaves de api/news.js) ─── */
 const NEWS_CATS = [
-  {id:"all",        label:"Todos",       color:"#E040FB"},
-  {id:"cinema",     label:"Cinema",      color:"#F59E0B"},
-  {id:"bilheteria", label:"Bilheteria",  color:"#4ADE80"},
-  {id:"streaming",  label:"Streaming",   color:"#E1306C"},
-  {id:"tech",       label:"Tecnologia",  color:"#60A5FA"},
+  {id:"all",        label:"Todos",       color:C.accent},
+  {id:"local",      label:"Goiânia",     color:C.accentHi},
+  {id:"emalta",     label:"Em alta",     color:C.danger},
+  {id:"criticas",   label:"Críticas",    color:"#B9A3D6"},
+  {id:"cinema",     label:"Estreias",    color:C.champagne},
+  {id:"bilheteria", label:"Bilheteria",  color:C.success},
+  {id:"mercado",    label:"Mercado",     color:C.forest},
+  {id:"streaming",  label:"Streaming",   color:C.wine},
+  {id:"tech",       label:"Tecnologia",  color:"#9FB6C9"},
 ];
 
-/* ─── REAL CINEMA NEWS (Brasil, 2025-2026) ─── */
-const iNews = [
-  {id:1,  title:"'Capitão América: Admirável Mundo Novo' bate R$ 90M e lidera bilheteria brasileira",         source:"Omelete",            date:"24 mar", category:"bilheteria", read:false},
-  {id:2,  title:"ABRAPLEX: público nos cinemas cresce 22% no 1º trimestre de 2026 vs 2025",                   source:"ABRAPLEX",           date:"20 mar", category:"cinema",     read:false},
-  {id:3,  title:"Netflix e Cinemark anunciam parceria para exibições exclusivas nos EUA — e Brasil pode vir", source:"Variety Brasil",     date:"18 mar", category:"streaming",  read:false},
-  {id:4,  title:"'Missão Impossível 8' estreia no Brasil com pré-venda recorde em Goiás",                     source:"AdoroCinema",        date:"15 mar", category:"cinema",     read:false},
-  {id:5,  title:"Dolby Atmos e laser: tecnologia de ponta chega ao Centro-Oeste brasileiro",                  source:"Cineclick",          date:"12 mar", category:"tech",       read:true},
-  {id:6,  title:"'Ainda Estou Aqui' supera 4 milhões de espectadores — maior drama nacional da história",     source:"Folha de S.Paulo",   date:"10 mar", category:"bilheteria", read:true},
-  {id:7,  title:"Disney anuncia Moana 2 e mais 8 títulos para salas de cinema antes do streaming",            source:"O Globo",            date:"08 mar", category:"streaming",  read:true},
-  {id:8,  title:"Ingresso.com lança programa de pontos integrado com redes de cinema nacionais",              source:"TechTudo",           date:"05 mar", category:"tech",       read:true},
-  {id:9,  title:"Semana do Cinema de abril terá ingressos a R$ 12 — promoção volta mais forte em 2026",       source:"G1",                 date:"03 mar", category:"cinema",     read:true},
-  {id:10, title:"4DX e ScreenX expandem para mais 15 cinemas no Brasil no segundo semestre",                  source:"Exame",              date:"28 fev", category:"tech",       read:true},
-];
-
-/* ─── REAL CINEMA COMPETITORS (Goiânia) ─── */
+/* ─── CONCORRENTES (Goiânia) — métricas vêm ao vivo do business_discovery ─── */
 const iCompetitors = [
-  {id:1, name:"Cinemark Goiânia",       handle:"@cinemark_br",         platform:"instagram", followers:"842K",  engagement:"3.1%", postsPerWeek:6,  growth:"+0.9%", growthPositive:true,  location:"Goiânia Shopping / Flamboyant"},
-  {id:2, name:"Kinoplex Buriti",        handle:"@kinoplex",            platform:"instagram", followers:"312K",  engagement:"2.6%", postsPerWeek:5,  growth:"+0.4%", growthPositive:true,  location:"Buriti Shopping"},
-  {id:3, name:"Cinesercla",             handle:"@cinesercla",          platform:"instagram", followers:"48K",   engagement:"4.2%", postsPerWeek:4,  growth:"+1.8%", growthPositive:true,  location:"Centro-Oeste / Goiânia"},
-  {id:4, name:"CineSystem Goiânia",     handle:"@cinesystem",          platform:"instagram", followers:"21K",   engagement:"3.9%", postsPerWeek:3,  growth:"+1.1%", growthPositive:true,  location:"Multiplan"},
-  {id:5, name:"Cine Cultura Goiânia",   handle:"@cinecultura_goiania", platform:"instagram", followers:"8.4K",  engagement:"6.8%", postsPerWeek:4,  growth:"+3.2%", growthPositive:true,  location:"Centro de Goiânia"},
+  {id:1, name:"Cinemark",  handle:"@cinemarkoficial", platform:"instagram", location:"Flamboyant · Passeio das Águas"},
+  {id:2, name:"Kinoplex",  handle:"@kinoplex",        platform:"instagram", location:"Goiânia Shopping"},
+  {id:3, name:"Cinépolis", handle:"@cinepolisbrasil", platform:"instagram", location:"Shopping Cerrado"},
+  {id:4, name:"Lumière",   handle:"@cinemaslumiere",  platform:"instagram", location:"Banana Shopping · Bougainville"},
 ];
 
-/* ─── INSTAGRAM DATA — @cinex.goiania (será substituído pelos dados reais da API) ─── */
-const igFollowerHistory = [
-  {m:"Out",v:18400},{m:"Nov",v:19200},{m:"Dez",v:20100},
-  {m:"Jan",v:21400},{m:"Fev",v:22800},{m:"Mar",v:24300},
-];
-const igEngagementHistory = [
-  {m:"Out",v:5.1},{m:"Nov",v:5.4},{m:"Dez",v:5.9},
-  {m:"Jan",v:5.6},{m:"Fev",v:6.2},{m:"Mar",v:6.58},
-];
-const igImpressionsWeekly = [
-  {d:"21/3",v:38200,ig:28000,yt:7200,fb:3000},
-  {d:"22/3",v:42100,ig:32000,yt:6100,fb:4000},
-  {d:"23/3",v:31900,ig:23000,yt:5900,fb:3000},
-  {d:"24/3",v:55800,ig:43000,yt:7800,fb:5000},
-  {d:"25/3",v:68400,ig:54000,yt:8400,fb:6000},
-  {d:"26/3",v:61200,ig:48000,yt:7200,fb:6000},
-  {d:"27/3",v:79300,ig:63000,yt:9300,fb:7000},
-];
-const igTopPosts = [
-  {id:1, title:"Pré-estreia Missão Impossível 8 🎬",  type:"reels",    impressions:"38.4K", engagement:"9.2%", color:"#E1306C"},
-  {id:2, title:"Promoção Semana do Cinema 🎟️",         type:"carousel", impressions:"29.7K", engagement:"7.8%", color:"#E1306C"},
-  {id:3, title:"Making of sala Dolby Atmos",           type:"reels",    impressions:"24.2K", engagement:"8.1%", color:"#E1306C"},
-  {id:4, title:"Top 10 filmes de março para assistir", type:"feed",     impressions:"18.9K", engagement:"5.4%", color:"#E1306C"},
-];
-
-/* ─── CONTENT MIX PIE ─── */
+/* ─── CONTENT MIX PIE (planejado) ─── */
 const pieData = [
-  {name:"Filmes/Estreias",  value:38, color:"#E040FB"},
-  {name:"Promoções",        value:28, color:"#F59E0B"},
-  {name:"Eventos",          value:18, color:"#A78BFA"},
-  {name:"Institucional",    value:16, color:"#4ADE80"},
+  {name:"Filmes/Estreias",  value:38, color:C.accentHi},
+  {name:"Promoções",        value:28, color:C.champagne},
+  {name:"Eventos",          value:18, color:C.wine},
+  {name:"Institucional",    value:16, color:C.forest},
 ];
 
 /* ─── INITIAL PROJECT/TASK DATA ─── */
-let nPid=6, nTid=8, nCid=6, nCompId=5;
+let nPid=6, nTid=8, nCid=7;
 
 const iProjects = [
-  {id:1, name:"Campanha Semana do Cinema",    client:"Cinex Cinemas", status:"andamento", priority:"urgente", deadline:"2026-04-10", desc:"Posts, stories e reels para a promoção"},
-  {id:2, name:"Lançamento Sala Dolby",         client:"Cinex Cinemas", status:"producao",  priority:"urgente", deadline:"2026-04-20", desc:"Campanha completa inauguração Dolby Atmos"},
-  {id:3, name:"Reels Bastidores Março",        client:"Cinex Cinemas", status:"concluido", priority:"normal",  deadline:"2026-03-15", desc:"Série de reels nos bastidores"},
-  {id:4, name:"Identidade Stories Temporária", client:"Cinex Cinemas", status:"revisao",   priority:"normal",  deadline:"2026-04-05", desc:"Template de stories para Abril"},
-  {id:5, name:"Integração App Ingresso",       client:"Cinex Cinemas", status:"briefing",  priority:"baixa",   deadline:"2026-05-01", desc:"Visual para campanha app"},
+  {id:1, name:"Campanha Semana do Cinema",    client:"Aurum Cinema", status:"andamento", priority:"urgente", deadline:"2026-11-03", desc:"Posts, stories e reels para a promoção"},
+  {id:2, name:"Lançamento Sala Premium",       client:"Aurum Cinema", status:"producao",  priority:"urgente", deadline:"2026-11-14", desc:"Campanha completa da sala premium"},
+  {id:3, name:"Reels Bastidores Outubro",      client:"Aurum Cinema", status:"concluido", priority:"normal",  deadline:"2026-10-15", desc:"Série de reels nos bastidores"},
+  {id:4, name:"Identidade Stories Temporária", client:"Aurum Cinema", status:"revisao",   priority:"normal",  deadline:"2026-10-30", desc:"Template de stories para Novembro"},
+  {id:5, name:"Integração App Ingresso",       client:"Aurum Cinema", status:"briefing",  priority:"baixa",   deadline:"2026-12-01", desc:"Visual para campanha app"},
 ];
 
 const iTasks = [
-  {id:1, projectId:1, title:"Artes para feed Instagram",    assignee:"Ana",   status:"concluido", priority:"urgente", deadline:"2026-03-28"},
-  {id:2, projectId:1, title:"Stories animados promo",       assignee:"Bruno", status:"andamento", priority:"urgente", deadline:"2026-04-02"},
-  {id:3, projectId:1, title:"Reel corte promoção",          assignee:"Carol", status:"backlog",   priority:"normal",  deadline:"2026-04-05"},
-  {id:4, projectId:2, title:"Roteiro vídeo inauguração",    assignee:"Ana",   status:"planejando",priority:"urgente", deadline:"2026-04-10"},
-  {id:5, projectId:3, title:"Edição final reels",           assignee:"Bruno", status:"concluido", priority:"normal",  deadline:"2026-03-14"},
-  {id:6, projectId:4, title:"Layout stories Abril",        assignee:"Carol", status:"ajustes",   priority:"normal",  deadline:"2026-04-04"},
-  {id:7, projectId:5, title:"Mockup visual app",            assignee:"Ana",   status:"backlog",   priority:"baixa",   deadline:"2026-04-25"},
+  {id:1, projectId:1, title:"Artes para feed Instagram",    assignee:"Ana",   status:"concluido", priority:"urgente", deadline:"2026-10-22"},
+  {id:2, projectId:1, title:"Stories animados promo",       assignee:"Bruno", status:"andamento", priority:"urgente", deadline:"2026-10-27"},
+  {id:3, projectId:1, title:"Reel corte promoção",          assignee:"Carol", status:"backlog",   priority:"normal",  deadline:"2026-10-31"},
+  {id:4, projectId:2, title:"Roteiro vídeo inauguração",    assignee:"Ana",   status:"planejando",priority:"urgente", deadline:"2026-11-05"},
+  {id:5, projectId:3, title:"Edição final reels",           assignee:"Bruno", status:"concluido", priority:"normal",  deadline:"2026-10-14"},
+  {id:6, projectId:4, title:"Layout stories Novembro",      assignee:"Carol", status:"ajustes",   priority:"normal",  deadline:"2026-10-29"},
+  {id:7, projectId:5, title:"Mockup visual app",            assignee:"Ana",   status:"backlog",   priority:"baixa",   deadline:"2026-11-25"},
 ];
 
 const iContent = [
-  {id:1, title:"Post Missão Impossível 8",       platform:"instagram", type:"feed",    status:"agendado",  date:"2026-04-02", caption:"A nova missão começa dia 02 de abril! 🎬"},
-  {id:2, title:"Stories Semana do Cinema",       platform:"instagram", type:"stories", status:"rascunho",  date:"2026-04-07", caption:"Ingressos a R$12! Só esta semana 🎟️"},
-  {id:3, title:"Reel Bastidores Sala Dolby",     platform:"instagram", type:"reels",   status:"ideia",     date:"",           caption:""},
-  {id:4, title:"Vídeo Tour Sala VIP",            platform:"youtube",   type:"video",   status:"agendado",  date:"2026-04-10", caption:"Conheça nossa sala VIP"},
-  {id:5, title:"Post Resultado Semana Cinema",   platform:"instagram", type:"feed",    status:"publicado", date:"2026-03-24", caption:"Obrigado Goiânia! 🙌"},
-  {id:6, title:"Reel Top Filmes Abril",          platform:"instagram", type:"reels",   status:"rascunho",  date:"2026-04-01", caption:"Os filmes que você não pode perder em Abril!"},
+  {id:1, title:"Post estreia da semana",         platform:"instagram", type:"feed",    status:"agendado",  date:"2026-10-23", caption:"A estreia mais esperada chega quinta! 🎬"},
+  {id:2, title:"Stories Semana do Cinema",       platform:"instagram", type:"stories", status:"rascunho",  date:"2026-11-02", caption:"Ingressos promocionais! Só esta semana 🎟️"},
+  {id:3, title:"Reel Bastidores Sala Premium",   platform:"instagram", type:"reels",   status:"ideia",     date:"",           caption:""},
+  {id:4, title:"Vídeo Tour Sala VIP",            platform:"youtube",   type:"video",   status:"agendado",  date:"2026-10-30", caption:"Conheça nossa sala VIP"},
+  {id:5, title:"Post Resultado Outubro",         platform:"instagram", type:"feed",    status:"publicado", date:"2026-10-12", caption:"Obrigado Goiânia! 🙌"},
+  {id:6, title:"Reel Top Filmes Novembro",       platform:"instagram", type:"reels",   status:"rascunho",  date:"2026-11-01", caption:"Os filmes que você não pode perder em Novembro!"},
 ];
 
-const getSt = id => STATUSES.find(s=>s.id===id)||STATUSES[0];
 const getPl = id => PLATFORMS.find(p=>p.id===id)||PLATFORMS[0];
 
-/* ─── INSTAGRAM HOOK (busca dados reais da API) ─── */
-function useInstagramData() {
-  const [igData, setIgData] = useState(null);
-  const [igLoading, setIgLoading] = useState(true);
-  const [igError, setIgError] = useState(null);
+/* ─── HELPERS ─── */
+const fmtNum = n => n==null ? "—" : new Intl.NumberFormat("pt-BR",{notation:n>=10000?"compact":"standard",maximumFractionDigits:1}).format(n);
+const fmtPct = n => n==null ? "—" : `${n.toLocaleString("pt-BR",{maximumFractionDigits:2})}%`;
+const delta  = (cur, prev) => (cur==null||!prev) ? null : +((cur-prev)/prev*100).toFixed(1);
+const fmtDay = iso => { const [,m,d] = iso.split("-"); return `${d}/${m}`; };
+const timeAgo = iso => {
+  const min = Math.round((Date.now()-new Date(iso).getTime())/60000);
+  if (min < 60) return `há ${Math.max(min,1)} min`;
+  if (min < 1440) return `há ${Math.round(min/60)} h`;
+  return new Date(iso).toLocaleDateString("pt-BR",{day:"2-digit",month:"short"});
+};
+
+/* localStorage pode falhar (aba anônima, bloqueio) — o app funciona sem ele */
+const store = {
+  get(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
+  set(key, value)    { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignora */ } },
+};
+
+/* ─── HOOK GENÉRICO PARA AS FUNÇÕES /api ─── */
+function useApi(url) {
+  const [nonce, setNonce] = useState(0);
+  const key = url ? `${url}#${nonce}` : null;
+  // "loading" é derivado: enquanto a resposta guardada não for da chave atual, está carregando
+  const [state, setState] = useState({key:null, data:null, error:null});
 
   useEffect(() => {
+    if (!key) return;
     let cancelled = false;
-    async function fetchData() {
-      try {
-        const [profileRes, mediaRes] = await Promise.all([
-          fetch('/api/instagram?endpoint=profile'),
-          fetch('/api/instagram?endpoint=media'),
-        ]);
-        if (!profileRes.ok) throw new Error('API não configurada');
-        const profile = await profileRes.json();
-        const media   = await mediaRes.json();
-        if (profile.error) throw new Error(profile.error.message || 'Erro na API');
-        if (!cancelled) {
-          setIgData({ profile, posts: media.data || [] });
-          setIgLoading(false);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setIgError(err.message);
-          setIgLoading(false);
-        }
-      }
-    }
-    fetchData();
+    fetch(url)
+      .then(async r => {
+        // Em `npm run dev` o Vite não executa /api e devolve o index.html
+        if (!(r.headers.get("content-type")||"").includes("json")) throw new Error("API indisponível no servidor local — use `vercel dev` ou o deploy.");
+        const json = await r.json();
+        if (!r.ok) throw Object.assign(new Error(json.error||`HTTP ${r.status}`), {code:json.code});
+        return json;
+      })
+      .then(data => { if (!cancelled) setState({key, data, error:null}); })
+      .catch(err => { if (!cancelled) setState({key, data:null, error:err}); });
     return () => { cancelled = true; };
-  }, []);
+  }, [key, url]);
 
-  return { igData, igLoading, igError };
+  const loading = !!key && state.key!==key;
+  // Durante um reload mantém os dados anteriores na tela
+  return {data:state.data, error:loading?null:state.error, loading, reload:() => setNonce(n=>n+1)};
 }
 
-/* ─── BACKGROUND BLOBS (purple/magenta) ─── */
+const useInstagram = () => useApi("/api/instagram?endpoint=summary");
+const useNews      = () => useApi("/api/news");
+const useMovies    = () => useApi("/api/movies");
+
+/* ─── BACKGROUND BLOBS (ouro/vinho) ─── */
 function BackgroundBlobs() {
   return (
     <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}}>
-      <div style={{position:"absolute",width:700,height:700,top:"-15%",left:"-8%",background:"radial-gradient(circle,rgba(224,64,251,0.09) 0%,transparent 65%)",animation:"blob1 22s ease-in-out infinite",filter:"blur(55px)"}}/>
-      <div style={{position:"absolute",width:560,height:560,bottom:"5%",right:"0%",background:"radial-gradient(circle,rgba(167,139,250,0.07) 0%,transparent 65%)",animation:"blob2 28s ease-in-out infinite",filter:"blur(65px)"}}/>
-      <div style={{position:"absolute",width:480,height:480,top:"45%",left:"38%",background:"radial-gradient(circle,rgba(192,132,252,0.05) 0%,transparent 65%)",animation:"blob3 32s ease-in-out infinite",filter:"blur(75px)"}}/>
-      <div style={{position:"absolute",width:300,height:300,top:"20%",right:"25%",background:"radial-gradient(circle,rgba(224,64,251,0.04) 0%,transparent 70%)",animation:"blob1 40s ease-in-out infinite reverse",filter:"blur(45px)"}}/>
+      <div style={{position:"absolute",width:700,height:700,top:"-15%",left:"-8%",background:"radial-gradient(circle,rgba(201,169,79,0.09) 0%,transparent 65%)",animation:"blob1 22s ease-in-out infinite",filter:"blur(55px)"}}/>
+      <div style={{position:"absolute",width:560,height:560,bottom:"5%",right:"0%",background:"radial-gradient(circle,rgba(218,165,32,0.06) 0%,transparent 65%)",animation:"blob2 28s ease-in-out infinite",filter:"blur(65px)"}}/>
+      <div style={{position:"absolute",width:480,height:480,top:"45%",left:"38%",background:"radial-gradient(circle,rgba(74,22,37,0.18) 0%,transparent 65%)",animation:"blob3 32s ease-in-out infinite",filter:"blur(75px)"}}/>
+      <div style={{position:"absolute",width:300,height:300,top:"20%",right:"25%",background:"radial-gradient(circle,rgba(201,169,79,0.04) 0%,transparent 70%)",animation:"blob1 40s ease-in-out infinite reverse",filter:"blur(45px)"}}/>
     </div>
   );
 }
@@ -212,7 +194,7 @@ function MouseGlow() {
     return () => window.removeEventListener("mousemove", fn);
   }, []);
   return (
-    <div style={{position:"fixed",pointerEvents:"none",zIndex:1,left:pos.x-250,top:pos.y-250,width:500,height:500,background:"radial-gradient(circle,rgba(224,64,251,0.04) 0%,transparent 70%)",borderRadius:"50%",transition:"left 0.12s ease-out,top 0.12s ease-out",filter:"blur(8px)"}}/>
+    <div style={{position:"fixed",pointerEvents:"none",zIndex:1,left:pos.x-250,top:pos.y-250,width:500,height:500,background:"radial-gradient(circle,rgba(201,169,79,0.04) 0%,transparent 70%)",borderRadius:"50%",transition:"left 0.12s ease-out,top 0.12s ease-out",filter:"blur(8px)"}}/>
   );
 }
 
@@ -236,7 +218,7 @@ function Pip({value, onChange, options}) {
         <span style={{opacity:0.35,fontSize:8,marginLeft:2}}>▾</span>
       </button>
       {open&&(
-        <div style={{position:"absolute",left:0,top:"calc(100% + 6px)",background:"#0A0515",border:`1px solid ${C.borderHi}`,boxShadow:"0 20px 60px rgba(0,0,0,0.95)",zIndex:400,minWidth:180,borderRadius:14,padding:"6px 0",overflow:"hidden"}}>
+        <div style={{position:"absolute",left:0,top:"calc(100% + 6px)",background:"#100E0B",border:`1px solid ${C.borderHi}`,boxShadow:"0 20px 60px rgba(0,0,0,0.95)",zIndex:400,minWidth:180,borderRadius:14,padding:"6px 0",overflow:"hidden"}}>
           {options.map(o => {
             const active = o.id===value;
             return (
@@ -255,17 +237,17 @@ function Pip({value, onChange, options}) {
 }
 
 /* ─── STAT CARD ─── */
-function StatCard({label, value, accent, chart}) {
+function StatCard({label, value, accent, series}) {
   return (
     <div className="glass card-animate" style={{borderRadius:18,padding:22,position:"relative",overflow:"hidden",minHeight:115,transition:"all 0.25s"}}
       onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow=`0 0 30px ${accent||C.accent}22,0 20px 50px rgba(0,0,0,0.5)`;}}
       onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="";}}>
       <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,marginBottom:8,textTransform:"uppercase",fontWeight:700}}>{label}</div>
-      <div style={{color:accent||C.text1,fontFamily:C.font,fontSize:32,fontWeight:900,lineHeight:1,letterSpacing:"-0.02em"}}>{value}</div>
-      {chart&&(
+      <div style={{color:accent||C.text1,fontFamily:C.display,fontSize:32,fontWeight:700,lineHeight:1}}>{value}</div>
+      {series?.length>1&&(
         <div style={{position:"absolute",bottom:0,right:0,left:0,height:52,opacity:0.3}}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={igFollowerHistory} margin={{top:0,right:0,bottom:0,left:0}}>
+            <AreaChart data={series} margin={{top:0,right:0,bottom:0,left:0}}>
               <defs><linearGradient id={`g${label}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={accent||C.accent} stopOpacity={0.6}/>
                 <stop offset="100%" stopColor={accent||C.accent} stopOpacity={0}/>
@@ -281,7 +263,7 @@ function StatCard({label, value, accent, chart}) {
 }
 
 /* ─── METRIC CARD (Analytics) ─── */
-function MetricCard({label, value, delta, positive, color, loading}) {
+function MetricCard({label, value, delta, hint, color, loading}) {
   if (loading) return (
     <div className="glass" style={{borderRadius:18,padding:24}}>
       <div className="skeleton" style={{height:10,width:"60%",marginBottom:14}}/>
@@ -289,16 +271,19 @@ function MetricCard({label, value, delta, positive, color, loading}) {
       <div className="skeleton" style={{height:12,width:"50%"}}/>
     </div>
   );
+  const positive = delta>=0;
   return (
     <div className="glass card-animate" style={{borderRadius:18,padding:24,position:"relative",overflow:"hidden",transition:"all 0.25s"}}
       onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow=`0 0 30px ${color||C.accent}22,0 20px 50px rgba(0,0,0,0.5)`;}}
       onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="";}}>
       <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,marginBottom:10,textTransform:"uppercase",fontWeight:700}}>{label}</div>
-      <div style={{color:color||C.text1,fontFamily:C.font,fontSize:36,fontWeight:900,lineHeight:1,letterSpacing:"-0.02em",marginBottom:10}}>{value}</div>
-      <div style={{display:"flex",alignItems:"center",gap:5}}>
-        <span style={{color:positive?C.success:C.danger,fontSize:13,fontWeight:800}}>{positive?"↑":"↓"}</span>
-        <span style={{color:positive?C.success:C.danger,fontSize:12,fontFamily:C.font,fontWeight:700}}>{delta}</span>
-        <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>vs mês anterior</span>
+      <div style={{color:color||C.text1,fontFamily:C.display,fontSize:34,fontWeight:700,lineHeight:1,marginBottom:10}}>{value}</div>
+      <div style={{display:"flex",alignItems:"center",gap:5,minHeight:16}}>
+        {delta!=null ? <>
+          <span style={{color:positive?C.success:C.danger,fontSize:13,fontWeight:800}}>{positive?"↑":"↓"}</span>
+          <span style={{color:positive?C.success:C.danger,fontSize:12,fontFamily:C.font,fontWeight:700}}>{Math.abs(delta).toLocaleString("pt-BR")}%</span>
+          <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>vs 28 dias anteriores</span>
+        </> : hint && <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>{hint}</span>}
       </div>
       <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,background:`radial-gradient(circle,${color||C.accent}18 0%,transparent 70%)`}}/>
     </div>
@@ -308,7 +293,7 @@ function MetricCard({label, value, delta, positive, color, loading}) {
 const CustomTooltip = ({active, payload, label}) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{background:"#0A0515",border:`1px solid ${C.borderHi}`,borderRadius:12,padding:"10px 14px",fontSize:12,fontFamily:C.font}}>
+    <div style={{background:"#100E0B",border:`1px solid ${C.borderHi}`,borderRadius:12,padding:"10px 14px",fontSize:12,fontFamily:C.font}}>
       <div style={{color:C.text2,marginBottom:6,fontWeight:600}}>{label}</div>
       {payload.map((p,i) => (
         <div key={i} style={{color:p.color,fontWeight:800}}>{p.name}: {p.value}</div>
@@ -324,7 +309,7 @@ function Modal({title, onClose, children}) {
       style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24,backdropFilter:"blur(4px)"}}>
       <div style={{background:C.surface,border:`1px solid ${C.borderHi}`,borderRadius:22,padding:30,width:"100%",maxWidth:480,maxHeight:"88vh",overflowY:"auto",boxShadow:"0 40px 120px rgba(0,0,0,0.8)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:26}}>
-          <div style={{fontFamily:C.font,color:C.text1,fontSize:17,fontWeight:900,letterSpacing:"-0.02em"}}>{title}</div>
+          <div style={{fontFamily:C.display,color:C.text1,fontSize:17,fontWeight:900,letterSpacing:"-0.02em"}}>{title}</div>
           <button onClick={onClose} style={{color:C.text3,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",fontSize:13,width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
         {children}
@@ -356,7 +341,7 @@ function ProjectCard({project, tasks, onProjStatus, onProjPriority, onTaskToggle
 
   return (
     <div className="glass card-animate" style={{borderRadius:18,padding:16,transition:"all 0.25s",cursor:"default"}}
-      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 0 24px rgba(224,64,251,0.08),0 16px 40px rgba(0,0,0,0.6)`;}}
+      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 0 24px rgba(201,169,79,0.08),0 16px 40px rgba(0,0,0,0.6)`;}}
       onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="";}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:4}}>
         <div style={{flex:1,minWidth:0}}>
@@ -388,7 +373,7 @@ function ProjectCard({project, tasks, onProjStatus, onProjPriority, onTaskToggle
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               <button onClick={()=>onTaskToggle(task.id)}
                 style={{width:16,height:16,borderRadius:5,border:`1.5px solid ${isDone?C.success:C.border}`,background:isDone?C.success:C.card,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,transition:"all 0.15s"}}>
-                {isDone&&<span style={{color:"#090310",fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
+                {isDone&&<span style={{color:"#0C0B09",fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
               </button>
               <span style={{color:isDone?C.text3:C.text2,fontSize:12,fontFamily:C.fontBody,flex:1,textDecoration:isDone?"line-through":"none"}}>{task.title}</span>
               {task.assignee&&<span style={{color:C.text3,fontSize:10,fontFamily:C.font,fontWeight:600,flexShrink:0}}>{task.assignee}</span>}
@@ -475,7 +460,7 @@ function ContentManager({content, onStatusChange, onAdd}) {
           );
         })}
         <button onClick={()=>onAdd("ideia")}
-          style={{marginLeft:"auto",padding:"7px 20px",borderRadius:10,fontSize:12,fontWeight:800,fontFamily:C.font,border:"none",background:C.accent,color:"#0A0010",cursor:"pointer"}}>
+          style={{marginLeft:"auto",padding:"7px 20px",borderRadius:10,fontSize:12,fontWeight:800,fontFamily:C.font,border:"none",background:C.accent,color:"#1B1408",cursor:"pointer"}}>
           + Novo Conteúdo
         </button>
       </div>
@@ -504,7 +489,7 @@ function ContentManager({content, onStatusChange, onAdd}) {
                       onDragEnd={()=>{setDragId(null);setOverCol(null);}}
                       className="glass card-animate"
                       style={{opacity:dragId===item.id?0.4:1,cursor:"grab",borderRadius:16,padding:14,transition:"all 0.25s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 0 20px rgba(224,64,251,0.06),0 12px 32px rgba(0,0,0,0.5)`;}}
+                      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 0 20px rgba(201,169,79,0.06),0 12px 32px rgba(0,0,0,0.5)`;}}
                       onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="";}}>
                       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
                         <span style={{background:`${pl.color}20`,color:pl.color,fontSize:10,fontWeight:800,padding:"3px 9px",borderRadius:7,fontFamily:C.font}}>{pl.label}</span>
@@ -534,7 +519,8 @@ function ContentManager({content, onStatusChange, onAdd}) {
 
 /* ─── CALENDAR ─── */
 function CalendarView({content}) {
-  const [cur, setCur] = useState({year:2026, month:3});
+  const [cur, setCur] = useState(() => { const d = new Date(); return {year:d.getFullYear(), month:d.getMonth()}; });
+  const today = new Date();
   const daysInMonth = new Date(cur.year, cur.month+1, 0).getDate();
   const firstDay = new Date(cur.year, cur.month, 1).getDay();
   const monthName = new Date(cur.year, cur.month, 1).toLocaleString("pt-BR", {month:"long", year:"numeric"});
@@ -548,7 +534,7 @@ function CalendarView({content}) {
   return (
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:22}}>
-        <div style={{fontFamily:C.font,color:C.text1,fontSize:18,fontWeight:900,textTransform:"capitalize",letterSpacing:"-0.02em"}}>{monthName}</div>
+        <div style={{fontFamily:C.display,color:C.text1,fontSize:18,fontWeight:900,textTransform:"capitalize",letterSpacing:"-0.02em"}}>{monthName}</div>
         <div style={{display:"flex",gap:6}}>
           <button onClick={prev} style={{background:C.card,border:`1px solid ${C.border}`,color:C.text2,borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:14,fontFamily:C.font,transition:"border-color 0.15s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.borderHi} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>‹</button>
           <button onClick={next} style={{background:C.card,border:`1px solid ${C.border}`,color:C.text2,borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:14,fontFamily:C.font,transition:"border-color 0.15s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.borderHi} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>›</button>
@@ -566,7 +552,7 @@ function CalendarView({content}) {
         {Array.from({length:daysInMonth}).map((_,i) => {
           const day = i+1;
           const items = getDay(day);
-          const isToday = cur.year===2026&&cur.month===2&&day===27;
+          const isToday = cur.year===today.getFullYear()&&cur.month===today.getMonth()&&day===today.getDate();
           return (
             <div key={day} style={{minHeight:84,borderRadius:12,background:C.card,border:`1px solid ${isToday?C.accent:C.border}`,padding:8,transition:"border-color 0.15s"}}
               onMouseEnter={e=>{if(!isToday)e.currentTarget.style.borderColor=C.borderHi;}}
@@ -591,62 +577,82 @@ function CalendarView({content}) {
   );
 }
 
-/* ─── ANALYTICS VIEW (com dados reais do Instagram) ─── */
-function AnalyticsView() {
-  const { igData, igLoading, igError } = useInstagramData();
+/* ─── FAIXA DE STATUS DAS INTEGRAÇÕES ─── */
+function ApiBanner({state, label, onRetry}) {
+  const {loading, error, data} = state;
+  let color = C.success, icon = "●", text;
+  if (loading) { color = C.accent; icon = "◌"; text = `Conectando ${label}...`; }
+  else if (error) {
+    color = C.warn; icon = "⚠";
+    text = error.code==="not_configured" ? `${label}: falta configurar INSTAGRAM_ACCESS_TOKEN no Vercel (veja o README).`
+         : error.code===190                ? `${label}: token expirado ou inválido — gere um novo token e atualize no Vercel.`
+         : `${label}: ${error.message}`;
+  } else if (data) {
+    text = `${label} conectado${data.updatedAt?` · atualizado ${timeAgo(data.updatedAt)}`:""}`;
+  } else return null;
+  return (
+    <div style={{background:`${color}10`,border:`1px solid ${color}30`,borderRadius:12,padding:"10px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
+      <span style={{color,fontSize:12}}>{icon}</span>
+      <span style={{color:C.text2,fontSize:12,fontFamily:C.fontBody,flex:1}}>{text}</span>
+      {onRetry&&!loading&&(
+        <button onClick={onRetry} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"3px 10px",color:C.text2,fontSize:11,fontFamily:C.font,fontWeight:700,cursor:"pointer"}}>↻ Atualizar</button>
+      )}
+    </div>
+  );
+}
 
-  const followers = igData?.profile?.followers_count
-    ? new Intl.NumberFormat("pt-BR").format(igData.profile.followers_count)
-    : "24.3K";
-  const mediaCount = igData?.profile?.media_count || 187;
-  const realPosts = igData?.posts || [];
+function EmptyState({children, height=160}) {
+  return (
+    <div style={{height,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",color:C.text3,fontSize:12,fontFamily:C.fontBody,border:`1px dashed ${C.border}`,borderRadius:12,padding:16}}>
+      {children}
+    </div>
+  );
+}
+
+const sectionLabel = {color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,textTransform:"uppercase"};
+
+/* ─── ANALYTICS VIEW (Instagram Graph API) ─── */
+function AnalyticsView({ig}) {
+  const d = ig.data;
+  const p = d?.profile;
+  const t = d?.totals || {};
+  const prev = d?.previous || {};
+  const reachSeries = (d?.series?.reach||[]).map(x=>({d:fmtDay(x.date), v:x.value}));
+  const followSeries = (d?.series?.follower_count||[]).map(x=>({d:fmtDay(x.date), v:x.value}));
+  const newFollowers = followSeries.length ? followSeries.reduce((s,x)=>s+x.v,0) : null;
+  const posts = d?.posts || [];
+  const postBars = posts.slice(0,12).reverse().map(x=>({d:new Date(x.timestamp).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}), likes:x.like_count||0, comments:x.comments_count||0}));
 
   return (
     <div>
-      {/* Status API */}
-      {igError && (
-        <div style={{background:`${C.warn}15`,border:`1px solid ${C.warn}30`,borderRadius:12,padding:"10px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
-          <span style={{color:C.warn,fontSize:14}}>⚠</span>
-          <span style={{color:C.text2,fontSize:12,fontFamily:C.fontBody}}>
-            API Instagram não configurada. Configurar em <code style={{color:C.accent,background:C.card,padding:"1px 6px",borderRadius:4}}>.env</code> e fazer deploy.
-            <span style={{color:C.text3,marginLeft:6}}>Exibindo dados de referência.</span>
-          </span>
-        </div>
-      )}
-      {igLoading && (
-        <div style={{background:`${C.accent}10`,border:`1px solid ${C.accent}20`,borderRadius:12,padding:"10px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
-          <span style={{color:C.accent,fontSize:13}}>◌</span>
-          <span style={{color:C.text2,fontSize:12,fontFamily:C.fontBody}}>Conectando ao Instagram @cinex.goiania...</span>
-        </div>
-      )}
+      <ApiBanner state={ig} label="Instagram @aurum.cinema" onRetry={ig.reload}/>
 
-      {/* 4 Metric Cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:28}}>
-        <MetricCard loading={igLoading} label="Seguidores"   value={followers}     delta="6.6%"   positive={true}  color={C.accent}/>
-        <MetricCard loading={igLoading} label="Engajamento"  value="6.58%"         delta="0.38pp" positive={true}  color="#C084FC"/>
-        <MetricCard loading={igLoading} label="Impressões"   value="486K"          delta="14.2%"  positive={true}  color={C.info}/>
-        <MetricCard loading={igLoading} label="Alcance"      value="312K"          delta="8.9%"   positive={true}  color={C.warn}/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:16,marginBottom:28}}>
+        <MetricCard loading={ig.loading} label="Seguidores"         value={fmtNum(p?.followers_count)} hint={newFollowers!=null?`+${fmtNum(newFollowers)} novos em 28 dias`:null} color={C.accent}/>
+        <MetricCard loading={ig.loading} label="Alcance · 28d"       value={fmtNum(t.reach)}            delta={delta(t.reach, prev.reach)}                     color={C.accentHi}/>
+        <MetricCard loading={ig.loading} label="Visualizações · 28d" value={fmtNum(t.views)}            delta={delta(t.views, prev.views)}                     color={C.champagne}/>
+        <MetricCard loading={ig.loading} label="Engajamento / post"  value={fmtPct(d?.engagementRate)}  hint={d?`${d.postsPerWeek} posts/semana`:null}        color={C.forest}/>
       </div>
 
-      {/* Perfil badge */}
-      {igData?.profile && (
-        <div className="glass" style={{borderRadius:18,padding:18,marginBottom:20,display:"flex",alignItems:"center",gap:16}}>
-          {igData.profile.profile_picture_url && (
-            <img src={igData.profile.profile_picture_url} alt="@cinex.goiania"
+      {p && (
+        <div className="glass" style={{borderRadius:18,padding:18,marginBottom:20,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+          {p.profile_picture_url && (
+            <img src={p.profile_picture_url} alt={`@${p.username}`}
               style={{width:52,height:52,borderRadius:"50%",border:`2px solid ${C.accent}`,objectFit:"cover"}}/>
           )}
-          <div>
-            <div style={{color:C.text1,fontFamily:C.font,fontSize:16,fontWeight:900,marginBottom:4}}>@{igData.profile.username || "cinex.goiania"}</div>
-            <div style={{color:C.text2,fontSize:12,fontFamily:C.fontBody}}>{igData.profile.biography || "Cinex Cinemas — Goiânia"}</div>
+          <div style={{flex:"1 1 220px",minWidth:0}}>
+            <a href={`https://instagram.com/${p.username}`} target="_blank" rel="noreferrer" style={{color:C.text1,fontFamily:C.display,fontSize:16,fontWeight:700,marginBottom:4,textDecoration:"none",display:"block"}}>@{p.username}</a>
+            <div style={{color:C.text2,fontSize:12,fontFamily:C.fontBody,whiteSpace:"pre-line"}}>{p.biography || "Aurum Cinema — Goiânia"}</div>
           </div>
-          <div style={{marginLeft:"auto",display:"flex",gap:24}}>
+          <div style={{display:"flex",gap:24}}>
             {[
-              {label:"Posts",     value:mediaCount},
-              {label:"Seguidores",value:igData.profile.followers_count||"24.3K"},
-              {label:"Seguindo",  value:igData.profile.follows_count||282},
+              {label:"Posts",           value:p.media_count},
+              {label:"Seguidores",      value:p.followers_count},
+              {label:"Visitas ao perfil",value:t.profile_views},
+              {label:"Contas engajadas",value:t.accounts_engaged},
             ].map(s => (
               <div key={s.label} style={{textAlign:"center"}}>
-                <div style={{color:C.text1,fontFamily:C.font,fontSize:18,fontWeight:900}}>{typeof s.value==="number"?new Intl.NumberFormat("pt-BR").format(s.value):s.value}</div>
+                <div style={{color:C.text1,fontFamily:C.display,fontSize:18,fontWeight:700}}>{fmtNum(s.value)}</div>
                 <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>{s.label}</div>
               </div>
             ))}
@@ -654,51 +660,48 @@ function AnalyticsView() {
         </div>
       )}
 
-      {/* Charts 2x2 */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
-        {/* Crescimento de seguidores */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(340px,1fr))",gap:16,marginBottom:16}}>
         <div className="glass" style={{borderRadius:18,padding:22}}>
-          <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,marginBottom:6,textTransform:"uppercase"}}>Crescimento de Seguidores</div>
-          <div style={{color:C.text1,fontFamily:C.font,fontSize:20,fontWeight:900,marginBottom:16}}>{followers}</div>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={igFollowerHistory}>
-              <defs>
-                <linearGradient id="fgGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={C.accent} stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor={C.accent} stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="m" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}K`}/>
-              <Tooltip content={<CustomTooltip/>} formatter={v=>[`${(v/1000).toFixed(1)}K`,"Seguidores"]}/>
-              <Area type="monotone" dataKey="v" name="Seguidores" stroke={C.accent} strokeWidth={2} fill="url(#fgGrad)" dot={false} activeDot={{r:4,fill:C.accent}}/>
-            </AreaChart>
-          </ResponsiveContainer>
+          <div style={{...sectionLabel,marginBottom:6}}>Alcance diário</div>
+          <div style={{color:C.text1,fontFamily:C.display,fontSize:20,fontWeight:700,marginBottom:16}}>{fmtNum(t.reach)} <span style={{color:C.text3,fontSize:12,fontFamily:C.fontBody}}>contas em 28 dias</span></div>
+          {reachSeries.length ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={reachSeries}>
+                <defs>
+                  <linearGradient id="reachGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={C.accent} stopOpacity={0.35}/>
+                    <stop offset="100%" stopColor={C.accent} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="d" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={24}/>
+                <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={fmtNum} width={44}/>
+                <Tooltip content={<CustomTooltip/>}/>
+                <Area type="monotone" dataKey="v" name="Alcance" stroke={C.accent} strokeWidth={2} fill="url(#reachGrad)" dot={false} activeDot={{r:4,fill:C.accent}}/>
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : <EmptyState>{ig.loading?"Carregando...":"Sem série de alcance disponível."}</EmptyState>}
         </div>
 
-        {/* Taxa de Engajamento */}
         <div className="glass" style={{borderRadius:18,padding:22}}>
-          <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,marginBottom:6,textTransform:"uppercase"}}>Taxa de Engajamento</div>
-          <div style={{color:"#C084FC",fontFamily:C.font,fontSize:20,fontWeight:900,marginBottom:16}}>6.58%</div>
-          <ResponsiveContainer width="100%" height={160}>
-            <LineChart data={igEngagementHistory}>
-              <XAxis dataKey="m" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`}/>
-              <Tooltip content={<CustomTooltip/>} formatter={v=>[`${v}%`,"Engajamento"]}/>
-              <Line type="monotone" dataKey="v" name="Engajamento" stroke="#C084FC" strokeWidth={2.5} dot={{fill:"#C084FC",r:3}} activeDot={{r:5}}/>
-            </LineChart>
-          </ResponsiveContainer>
+          <div style={{...sectionLabel,marginBottom:6}}>Novos seguidores por dia</div>
+          <div style={{color:C.champagne,fontFamily:C.display,fontSize:20,fontWeight:700,marginBottom:16}}>{newFollowers!=null?`+${fmtNum(newFollowers)}`:"—"}</div>
+          {followSeries.length ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={followSeries}>
+                <XAxis dataKey="d" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={24}/>
+                <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} width={36}/>
+                <Tooltip content={<CustomTooltip/>}/>
+                <Bar dataKey="v" name="Novos seguidores" fill={C.champagne} radius={[4,4,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <EmptyState>{ig.loading?"Carregando...":"A Meta só fornece esta série para contas com 100+ seguidores."}</EmptyState>}
         </div>
 
-        {/* Impressões por Dia */}
         <div className="glass" style={{borderRadius:18,padding:22,gridColumn:"1/-1"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-            <div>
-              <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,textTransform:"uppercase"}}>Impressões por Dia</div>
-              <div style={{color:C.text1,fontFamily:C.font,fontSize:20,fontWeight:900,marginTop:4}}>Últimos 7 dias</div>
-            </div>
-            <div style={{display:"flex",gap:16,alignItems:"center"}}>
-              {[{label:"Instagram",color:"#E1306C"},{label:"YouTube",color:"#FF0000"},{label:"Facebook",color:"#1877F2"}].map(l => (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+            <div style={sectionLabel}>Interações nos últimos 12 posts</div>
+            <div style={{display:"flex",gap:16}}>
+              {[{label:"Curtidas",color:C.accentHi},{label:"Comentários",color:C.wine}].map(l => (
                 <div key={l.label} style={{display:"flex",alignItems:"center",gap:6}}>
                   <div style={{width:8,height:8,borderRadius:2,background:l.color}}/>
                   <span style={{color:C.text2,fontSize:11,fontFamily:C.font}}>{l.label}</span>
@@ -706,144 +709,140 @@ function AnalyticsView() {
               ))}
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={igImpressionsWeekly} barGap={3}>
-              <XAxis dataKey="d" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}K`}/>
-              <Tooltip content={<CustomTooltip/>} formatter={(v,n)=>[`${(v/1000).toFixed(1)}K`,n]}/>
-              <Bar dataKey="ig" name="Instagram" fill="#E1306C" radius={[4,4,0,0]}/>
-              <Bar dataKey="yt" name="YouTube"   fill="#FF0000" radius={[4,4,0,0]}/>
-              <Bar dataKey="fb" name="Facebook"  fill="#1877F2" radius={[4,4,0,0]}/>
-            </BarChart>
-          </ResponsiveContainer>
+          {postBars.length ? (
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={postBars} barGap={3}>
+                <XAxis dataKey="d" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false}/>
+                <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={fmtNum} width={40}/>
+                <Tooltip content={<CustomTooltip/>}/>
+                <Bar dataKey="likes"    name="Curtidas"    stackId="a" fill={C.accentHi}/>
+                <Bar dataKey="comments" name="Comentários" stackId="a" fill={C.wine} radius={[4,4,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <EmptyState height={180}>{ig.loading?"Carregando...":"Conecte o Instagram para ver o desempenho dos posts."}</EmptyState>}
         </div>
       </div>
 
-      {/* Posts reais do Instagram (se API conectada) ou referência */}
       <div className="glass" style={{borderRadius:18,padding:22}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
-          <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,textTransform:"uppercase"}}>
-            {realPosts.length > 0 ? `Posts Recentes — @cinex.goiania (${realPosts.length} posts)` : "Posts com Melhor Desempenho"}
-          </div>
-          {realPosts.length > 0 && (
-            <span style={{background:`${C.success}20`,color:C.success,fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:7,fontFamily:C.font}}>● LIVE</span>
-          )}
+          <div style={sectionLabel}>Posts recentes — @aurum.cinema</div>
+          {posts.length>0&&<span style={{background:`${C.success}20`,color:C.success,fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:7,fontFamily:C.font}}>● AO VIVO</span>}
         </div>
+        {posts.length===0 && <EmptyState height={100}>{ig.loading?"Carregando...":"Nenhum post carregado."}</EmptyState>}
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {(realPosts.length > 0 ? realPosts.slice(0,5) : igTopPosts).map((post, i) => {
-            const isReal = realPosts.length > 0;
-            return (
-              <div key={post.id||i} className="card-animate"
-                style={{display:"flex",alignItems:"center",gap:16,background:C.card,borderRadius:14,padding:"14px 18px",border:`1px solid ${C.border}`,transition:"all 0.2s"}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent+"44";e.currentTarget.style.background=C.cardHi;}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.background=C.card;}}>
-                {isReal && post.thumbnail_url && (
-                  <img src={post.thumbnail_url||post.media_url} alt=""
-                    style={{width:44,height:44,borderRadius:10,objectFit:"cover",flexShrink:0,border:`1px solid ${C.border}`}}/>
-                )}
-                {!isReal && (
-                  <div style={{width:28,height:28,borderRadius:8,background:`${post.color||C.accent}20`,border:`1px solid ${post.color||C.accent}40`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{color:post.color||C.accent,fontFamily:C.font,fontSize:11,fontWeight:900}}>#{i+1}</span>
-                  </div>
-                )}
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:800,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                    {isReal ? (post.caption||"—").substring(0,60)+(post.caption?.length>60?"...":"") : post.title}
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{background:"#E1306C20",color:"#E1306C",fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:6,fontFamily:C.font}}>instagram</span>
-                    {isReal && <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>{post.media_type?.toLowerCase()}</span>}
-                    {!isReal && <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>{post.type}</span>}
-                    {isReal && <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginLeft:"auto"}}>{new Date(post.timestamp).toLocaleDateString("pt-BR")}</span>}
-                  </div>
+          {posts.slice(0,8).map(post => (
+            <div key={post.id} className="card-animate"
+              style={{display:"flex",alignItems:"center",gap:16,background:C.card,borderRadius:14,padding:"12px 16px",border:`1px solid ${C.border}`,transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent+"44";e.currentTarget.style.background=C.cardHi;}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.background=C.card;}}>
+              {(post.thumbnail_url || (post.media_type!=="VIDEO" && post.media_url)) ? (
+                <img src={post.thumbnail_url||post.media_url} alt="" loading="lazy"
+                  style={{width:44,height:44,borderRadius:10,objectFit:"cover",flexShrink:0,border:`1px solid ${C.border}`}}/>
+              ) : <div style={{width:44,height:44,borderRadius:10,background:C.cardHi,flexShrink:0}}/>}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:700,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {post.caption ? post.caption.split("\n")[0] : "—"}
                 </div>
-                {isReal ? (
-                  <div style={{display:"flex",gap:16,flexShrink:0}}>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:800}}>{(post.like_count||0).toLocaleString("pt-BR")}</div>
-                      <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>curtidas</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{color:C.accent,fontFamily:C.font,fontSize:13,fontWeight:800}}>{(post.comments_count||0).toLocaleString("pt-BR")}</div>
-                      <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>comentários</div>
-                    </div>
-                    {post.permalink && (
-                      <a href={post.permalink} target="_blank" rel="noreferrer"
-                        style={{alignSelf:"center",color:C.text3,fontSize:12,textDecoration:"none",background:C.border,padding:"4px 10px",borderRadius:8,transition:"color 0.15s"}}
-                        onMouseEnter={e=>e.currentTarget.style.color=C.accent}
-                        onMouseLeave={e=>e.currentTarget.style.color=C.text3}>↗</a>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{display:"flex",gap:20,flexShrink:0}}>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:800}}>{post.impressions}</div>
-                      <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>impressões</div>
-                    </div>
-                    <div style={{textAlign:"right",minWidth:60}}>
-                      <div style={{color:C.accent,fontFamily:C.font,fontSize:13,fontWeight:800}}>{post.engagement}</div>
-                      <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>engajamento</div>
-                    </div>
-                  </div>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{background:`${C.accent}20`,color:C.accent,fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:6,fontFamily:C.font}}>{(post.media_product_type==="REELS"?"reels":post.media_type||"").toLowerCase()}</span>
+                  <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>{new Date(post.timestamp).toLocaleDateString("pt-BR")}</span>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:16,flexShrink:0}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:800}}>{fmtNum(post.like_count||0)}</div>
+                  <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>curtidas</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{color:C.accent,fontFamily:C.font,fontSize:13,fontWeight:800}}>{fmtNum(post.comments_count||0)}</div>
+                  <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>comentários</div>
+                </div>
+                {post.permalink && (
+                  <a href={post.permalink} target="_blank" rel="noreferrer"
+                    style={{alignSelf:"center",color:C.text3,fontSize:12,textDecoration:"none",background:C.border,padding:"4px 10px",borderRadius:8,transition:"color 0.15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.color=C.accent}
+                    onMouseLeave={e=>e.currentTarget.style.color=C.text3}>↗</a>
                 )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
+        {d?.errors?.length>0 && (
+          <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginTop:14}}>Algumas métricas não vieram da Meta: {d.errors.join(" · ")}</div>
+        )}
       </div>
     </div>
   );
 }
 
-/* ─── COMPETITORS VIEW (concorrentes reais em Goiânia) ─── */
-function CompetitorsView({competitors, onAdd}) {
+/* ─── COMPETITORS VIEW (business_discovery ao vivo) ─── */
+const handleOf = c => (c.handle||"").replace(/^@/,"").toLowerCase();
+
+function CompetitorsView({competitors, ig, onAdd, onRemove}) {
+  const usernames = competitors.filter(c=>c.platform==="instagram"&&handleOf(c)).map(handleOf).sort().join(",");
+  const live = useApi(usernames ? `/api/instagram?endpoint=competitors&usernames=${encodeURIComponent(usernames)}` : null);
+  const byUser = Object.fromEntries((live.data?.items||[]).map(i=>[i.username,i]));
   const getPlatformColor = p => ({instagram:"#E1306C",youtube:"#FF0000",tiktok:"#69C9D0",facebook:"#1877F2"}[p]||C.accent);
   const getPlatformLabel = p => ({instagram:"Instagram",youtube:"YouTube",tiktok:"TikTok",facebook:"Facebook"}[p]||p);
 
+  const own = ig.data?.profile ? {
+    followers: ig.data.profile.followers_count, engagementRate: ig.data.engagementRate, postsPerWeek: ig.data.postsPerWeek,
+  } : null;
+
+  const bannerState = live.error?.code==="needs_facebook"
+    ? {...live, error:{message:"Métricas de concorrentes exigem token do fluxo Facebook Login (EAA...). Veja o README."}}
+    : live;
+
   return (
     <div>
+      <ApiBanner state={bannerState} label="Concorrentes (Instagram)" onRetry={live.reload}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        {own && (
+          <div className="glass card-animate" style={{borderRadius:18,padding:20,border:`1px solid ${C.accent}55`,position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,background:`radial-gradient(circle,${C.accent}25 0%,transparent 70%)`}}/>
+            <div style={{color:C.accent,fontFamily:C.display,fontSize:15,fontWeight:700,marginBottom:4}}>Aurum Cinema</div>
+            <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginBottom:12}}>@aurum.cinema · referência</div>
+            <CompetitorStats followers={own.followers} engagementRate={own.engagementRate} postsPerWeek={own.postsPerWeek}/>
+          </div>
+        )}
         {competitors.map(comp => {
           const plColor = getPlatformColor(comp.platform);
+          const m = byUser[handleOf(comp)];
           return (
             <div key={comp.id} className="glass card-animate"
               style={{borderRadius:18,padding:20,transition:"all 0.25s",position:"relative",overflow:"hidden"}}
               onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow=`0 0 28px ${plColor}18,0 16px 40px rgba(0,0,0,0.5)`;}}
               onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="";}}>
               <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,background:`radial-gradient(circle,${plColor}15 0%,transparent 70%)`}}/>
-              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
-                <div>
-                  <div style={{color:C.text1,fontFamily:C.font,fontSize:15,fontWeight:900,marginBottom:4}}>{comp.name}</div>
-                  <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-                    <span style={{background:`${plColor}20`,color:plColor,fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:7,fontFamily:C.font}}>{getPlatformLabel(comp.platform)}</span>
-                    {comp.handle&&<span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>{comp.handle}</span>}
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10,gap:8}}>
+                <div style={{display:"flex",gap:10,alignItems:"center",minWidth:0}}>
+                  {m?.picture && <img src={m.picture} alt="" style={{width:36,height:36,borderRadius:"50%",objectFit:"cover",border:`1px solid ${C.border}`}}/>}
+                  <div style={{minWidth:0}}>
+                    <div style={{color:C.text1,fontFamily:C.display,fontSize:15,fontWeight:700,marginBottom:4}}>{comp.name}</div>
+                    <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                      <span style={{background:`${plColor}20`,color:plColor,fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:7,fontFamily:C.font}}>{getPlatformLabel(comp.platform)}</span>
+                      {comp.handle&&(
+                        <a href={comp.platform==="instagram"?`https://instagram.com/${handleOf(comp)}`:undefined} target="_blank" rel="noreferrer"
+                          style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,textDecoration:"none"}}>{comp.handle}</a>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{color:comp.growthPositive?C.success:C.danger,fontFamily:C.font,fontSize:14,fontWeight:900,display:"flex",alignItems:"center",gap:4,justifyContent:"flex-end"}}>
-                    <span>{comp.growthPositive?"↑":"↓"}</span>
-                    <span>{comp.growth}</span>
-                  </div>
-                  <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody}}>crescimento</div>
-                </div>
+                <button onClick={()=>onRemove(comp.id)} title="Remover concorrente"
+                  style={{background:"transparent",border:"none",color:C.text3,cursor:"pointer",fontSize:12,padding:4}}
+                  onMouseEnter={e=>e.currentTarget.style.color=C.danger}
+                  onMouseLeave={e=>e.currentTarget.style.color=C.text3}>✕</button>
               </div>
               {comp.location&&(
                 <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginBottom:12,borderLeft:`2px solid ${C.border}`,paddingLeft:8}}>📍 {comp.location}</div>
               )}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <div style={{background:C.card,borderRadius:12,padding:"10px 14px"}}>
-                  <div style={{color:C.text1,fontFamily:C.font,fontSize:16,fontWeight:900}}>{comp.followers}</div>
-                  <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody,marginTop:2}}>seguidores</div>
-                </div>
-                <div style={{background:C.card,borderRadius:12,padding:"10px 14px"}}>
-                  <div style={{color:C.accent,fontFamily:C.font,fontSize:16,fontWeight:900}}>{comp.engagement}</div>
-                  <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody,marginTop:2}}>engajamento</div>
-                </div>
-                <div style={{background:C.card,borderRadius:12,padding:"10px 14px",gridColumn:"1/-1",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <div style={{color:C.text2,fontSize:11,fontFamily:C.fontBody}}>Posts por semana</div>
-                  <div style={{color:C.text1,fontFamily:C.font,fontSize:14,fontWeight:900}}>{comp.postsPerWeek}</div>
-                </div>
-              </div>
+              {m && !m.ok && (
+                <div style={{color:C.warn,fontSize:11,fontFamily:C.fontBody,marginBottom:10}}>⚠ Perfil não encontrado ou não é conta profissional — confira o @.</div>
+              )}
+              {live.loading && !m
+                ? <div className="skeleton" style={{height:110}}/>
+                : <CompetitorStats followers={m?.followers} engagementRate={m?.engagementRate} postsPerWeek={m?.postsPerWeek} lastPost={m?.lastPost}
+                    compareTo={own}/>}
             </div>
           );
         })}
@@ -859,14 +858,99 @@ function CompetitorsView({competitors, onAdd}) {
   );
 }
 
-/* ─── NEWS VIEW (notícias reais do setor) ─── */
-function NewsView({news, onToggleRead}) {
+function CompetitorStats({followers, engagementRate, postsPerWeek, lastPost, compareTo}) {
+  const vs = (val, ref) => (compareTo && val!=null && ref!=null)
+    ? <span style={{color:val>ref?C.danger:C.success,fontSize:10,marginLeft:6}}>{val>ref?"▲":"▼"} vs Aurum</span> : null;
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+      <div style={{background:C.card,borderRadius:12,padding:"10px 14px"}}>
+        <div style={{color:C.text1,fontFamily:C.display,fontSize:16,fontWeight:700}}>{fmtNum(followers)}</div>
+        <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody,marginTop:2}}>seguidores{vs(followers, compareTo?.followers)}</div>
+      </div>
+      <div style={{background:C.card,borderRadius:12,padding:"10px 14px"}}>
+        <div style={{color:C.accent,fontFamily:C.display,fontSize:16,fontWeight:700}}>{fmtPct(engagementRate)}</div>
+        <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody,marginTop:2}}>engajamento{vs(engagementRate, compareTo?.engagementRate)}</div>
+      </div>
+      <div style={{background:C.card,borderRadius:12,padding:"10px 14px",gridColumn:"1/-1",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{color:C.text2,fontSize:11,fontFamily:C.fontBody}}>Posts por semana{lastPost?<span style={{color:C.text3}}> · último {timeAgo(lastPost)}</span>:null}</div>
+        <div style={{color:C.text1,fontFamily:C.font,fontSize:14,fontWeight:800}}>{postsPerWeek ?? "—"}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MOVIES VIEW (TMDB via /api/movies) ─── */
+const MOVIE_TABS = [
+  {id:"trending",   label:"Em alta na semana", hint:"Mais buscados no mundo (TMDB)"},
+  {id:"nowPlaying", label:"Em cartaz no Brasil", hint:"Lançados recentemente nos cinemas BR"},
+  {id:"upcoming",   label:"Próximas estreias",  hint:"Data de estreia no Brasil"},
+];
+
+function MoviesView({movies}) {
+  const [tab, setTab] = useState("trending");
+  const list = movies.data?.[tab] || [];
+  const state = movies.error?.code==="not_configured"
+    ? {...movies, error:{message:"falta configurar TMDB_API_KEY no Vercel (veja o README)."}}
+    : movies;
+  return (
+    <div>
+      <ApiBanner state={state} label="Filmes (TMDB)" onRetry={movies.reload}/>
+      <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+        {MOVIE_TABS.map(t => {
+          const active = tab===t.id;
+          return (
+            <button key={t.id} onClick={()=>setTab(t.id)}
+              style={{padding:"6px 16px",borderRadius:10,fontSize:12,fontWeight:700,fontFamily:C.font,border:`1px solid ${active?C.accent:C.border}`,background:active?`${C.accent}18`:"transparent",color:active?C.accent:C.text2,cursor:"pointer"}}>
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginBottom:20}}>{MOVIE_TABS.find(t=>t.id===tab).hint}</div>
+      {movies.loading && !list.length && (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:16}}>
+          {Array.from({length:10}).map((_,i)=><div key={i} className="skeleton" style={{aspectRatio:"2/3",borderRadius:14}}/>)}
+        </div>
+      )}
+      {!movies.loading && !list.length && <EmptyState height={140}>Nenhum filme carregado.</EmptyState>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:16}}>
+        {list.map((m,i) => (
+          <a key={m.id} href={m.url} target="_blank" rel="noreferrer" title={m.overview} className="card-animate"
+            style={{textDecoration:"none",display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{position:"relative",aspectRatio:"2/3",borderRadius:14,overflow:"hidden",background:C.card,border:`1px solid ${C.border}`}}>
+              {m.poster
+                ? <img src={m.poster} alt={m.title} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                : <div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:C.text3,fontSize:11,padding:10,textAlign:"center"}}>{m.title}</div>}
+              {tab==="trending"&&<span style={{position:"absolute",top:8,left:8,background:"rgba(12,11,9,0.85)",color:C.accent,fontFamily:C.display,fontWeight:700,fontSize:13,padding:"2px 8px",borderRadius:8}}>#{i+1}</span>}
+              {m.rating!=null&&<span style={{position:"absolute",top:8,right:8,background:"rgba(12,11,9,0.85)",color:m.rating>=7?C.success:m.rating>=5.5?C.accentHi:C.danger,fontFamily:C.font,fontWeight:800,fontSize:11,padding:"2px 8px",borderRadius:8}}>★ {m.rating.toLocaleString("pt-BR")}</span>}
+            </div>
+            <div>
+              <div style={{color:C.text1,fontFamily:C.font,fontSize:12,fontWeight:700,lineHeight:1.3}}>{m.title}</div>
+              <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginTop:2}}>
+                {m.releaseDate ? new Date(m.releaseDate+"T12:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"}) : "sem data"}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── NEWS VIEW (Google News RSS via /api/news) ─── */
+function NewsView({newsApi, readIds, onToggleRead}) {
   const [catFilter, setCatFilter] = useState("all");
-  const filtered = catFilter==="all" ? news : news.filter(n=>n.category===catFilter);
-  const unreadCount = news.filter(n=>!n.read).length;
+  const [q, setQ] = useState("");
+  const items = newsApi.data?.items || [];
+  const isRead = n => readIds.includes(n.id);
+  const filtered = items
+    .filter(n => catFilter==="all" || n.category===catFilter)
+    .filter(n => !q || `${n.title} ${n.source}`.toLowerCase().includes(q.toLowerCase()));
+  const unreadCount = filtered.filter(n=>!isRead(n)).length;
 
   return (
     <div>
+      <ApiBanner state={newsApi} label="Notícias (Google News)" onRetry={newsApi.reload}/>
       <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap",alignItems:"center"}}>
         {NEWS_CATS.map(cat => {
           const active = catFilter===cat.id;
@@ -877,6 +961,7 @@ function NewsView({news, onToggleRead}) {
             </button>
           );
         })}
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar..." style={{...inputSt,width:180,padding:"6px 12px",fontSize:12,borderRadius:10}}/>
         {unreadCount>0&&(
           <div style={{marginLeft:"auto",background:`${C.accent}18`,border:`1px solid ${C.accent}30`,borderRadius:10,padding:"6px 14px",display:"flex",alignItems:"center",gap:6}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:C.accent}}/>
@@ -884,29 +969,36 @@ function NewsView({news, onToggleRead}) {
           </div>
         )}
       </div>
+      {newsApi.loading && !items.length && (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:14}}>
+          {Array.from({length:6}).map((_,i)=><div key={i} className="skeleton" style={{height:120,borderRadius:16}}/>)}
+        </div>
+      )}
+      {!newsApi.loading && !filtered.length && <EmptyState height={140}>{items.length?"Nenhuma notícia com esse filtro.":"Nenhuma notícia carregada."}</EmptyState>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:14}}>
         {filtered.map(item => {
           const cat = NEWS_CATS.find(c=>c.id===item.category)||NEWS_CATS[1];
+          const read = isRead(item);
           return (
             <div key={item.id} className="glass card-animate"
-              style={{borderRadius:16,padding:18,transition:"all 0.25s",position:"relative",opacity:item.read?0.72:1,borderLeft:!item.read?`3px solid ${C.accent}`:"3px solid transparent"}}
+              style={{borderRadius:16,padding:18,transition:"all 0.25s",position:"relative",opacity:read?0.65:1,borderLeft:!read?`3px solid ${C.accent}`:"3px solid transparent",display:"flex",flexDirection:"column"}}
               onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.opacity="1";e.currentTarget.style.boxShadow="0 12px 32px rgba(0,0,0,0.5)";}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.opacity=item.read?"0.72":"1";e.currentTarget.style.boxShadow="";}}>
-              {!item.read&&(
-                <div style={{position:"absolute",top:14,right:14,width:7,height:7,borderRadius:"50%",background:C.accent,boxShadow:`0 0 6px ${C.accent}`}}/>
-              )}
+              onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.opacity=read?"0.65":"1";e.currentTarget.style.boxShadow="";}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
                 <span style={{background:`${cat.color}20`,color:cat.color,fontSize:10,fontWeight:800,padding:"3px 9px",borderRadius:7,fontFamily:C.font}}>{cat.label}</span>
-                <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginLeft:"auto"}}>{item.date}</span>
+                <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginLeft:"auto"}}>{timeAgo(item.publishedAt)}</span>
               </div>
-              <div style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:800,lineHeight:1.4,marginBottom:10}}>{item.title}</div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>{item.source}</span>
+              <a href={item.link} target="_blank" rel="noreferrer" onClick={()=>!read&&onToggleRead(item.id)}
+                style={{color:C.text1,fontFamily:C.font,fontSize:13,fontWeight:700,lineHeight:1.45,marginBottom:12,textDecoration:"none",flex:1}}
+                onMouseEnter={e=>e.currentTarget.style.color=C.accent}
+                onMouseLeave={e=>e.currentTarget.style.color=C.text1}>{item.title} ↗</a>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+                <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.source}</span>
                 <button onClick={()=>onToggleRead(item.id)}
-                  style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"4px 12px",color:item.read?C.text3:C.accent,fontSize:11,fontFamily:C.font,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}
+                  style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"4px 12px",color:read?C.text3:C.accent,fontSize:11,fontFamily:C.font,fontWeight:700,cursor:"pointer",transition:"all 0.15s",flexShrink:0}}
                   onMouseEnter={e=>e.currentTarget.style.borderColor=C.borderHi}
                   onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-                  {item.read?"Lida":"Marcar lida"}
+                  {read?"Lida":"Marcar lida"}
                 </button>
               </div>
             </div>
@@ -917,14 +1009,15 @@ function NewsView({news, onToggleRead}) {
   );
 }
 
+
 /* ─── APP ─── */
 export default function App() {
   const [view,        setView]        = useState("overview");
   const [projects,    setProjects]    = useState(iProjects);
   const [tasks,       setTasks]       = useState(iTasks);
   const [content,     setContent]     = useState(iContent);
-  const [competitors, setCompetitors] = useState(iCompetitors);
-  const [news,        setNews]        = useState(iNews);
+  const [competitors, setCompetitors] = useState(() => store.get("aurum.competitors", iCompetitors));
+  const [readIds,     setReadIds]     = useState(() => store.get("aurum.newsRead", []));
   const [col,         setCol]         = useState(false);
   const [modal,       setModal]       = useState(null);
   const [form,        setForm]        = useState({});
@@ -933,11 +1026,19 @@ export default function App() {
   const setPPr = (id,p) => setProjects(ps=>ps.map(pr=>pr.id===id?{...pr,priority:p}:pr));
   const setCSt = (id,s) => setContent(cs=>cs.map(c=>c.id===id?{...c,status:s}:c));
   const toggleTask = id => setTasks(ts=>ts.map(t=>t.id===id?{...t,status:t.status==="concluido"?"andamento":"concluido"}:t));
-  const toggleRead = id => setNews(ns=>ns.map(n=>n.id===id?{...n,read:!n.read}:n));
+  const toggleRead = id => setReadIds(ids => ids.includes(id) ? ids.filter(x=>x!==id) : [id, ...ids].slice(0,500));
+  const removeCompetitor = id => setCompetitors(cs=>cs.filter(c=>c.id!==id));
+
+  const ig      = useInstagram();
+  const newsApi = useNews();
+  const movies  = useMovies();
+
+  useEffect(() => { store.set("aurum.competitors", competitors); }, [competitors]);
+  useEffect(() => { store.set("aurum.newsRead", readIds); }, [readIds]);
 
   const openModal = (type, defaultStatus) => {
     setModal(type);
-    if (type==="project")    setForm({name:"",client:"Cinex Cinemas",status:defaultStatus||"backlog",priority:"normal",deadline:"",desc:""});
+    if (type==="project")    setForm({name:"",client:"Aurum Cinema",status:defaultStatus||"backlog",priority:"normal",deadline:"",desc:""});
     else if (type==="task")  setForm({title:"",projectId:defaultStatus||projects[0]?.id||1,assignee:"",status:"backlog",priority:"normal",deadline:""});
     else if (type==="content") setForm({title:"",platform:"instagram",type:"feed",status:defaultStatus||"ideia",date:"",caption:""});
     else if (type==="competitor") setForm({name:"",platform:"instagram",handle:"",location:""});
@@ -948,11 +1049,10 @@ export default function App() {
     else if (modal==="task")     setTasks(ts=>[...ts,{...form,id:nTid++,title:form.title||"Nova Tarefa",projectId:Number(form.projectId)}]);
     else if (modal==="content")  setContent(cs=>[...cs,{...form,id:nCid++,title:form.title||"Novo Conteúdo"}]);
     else if (modal==="competitor") setCompetitors(cs=>[...cs,{
-      id:nCompId++,
+      id:Date.now(),
       name:form.name||"Novo Concorrente",
       handle:form.handle?`@${form.handle.replace(/^@/,"")}`:undefined,
       platform:form.platform||"instagram",
-      followers:"—", engagement:"—", postsPerWeek:0, growth:"+0%", growthPositive:true,
       location:form.location||"",
     }]);
     setModal(null);
@@ -976,10 +1076,14 @@ export default function App() {
     {id:"calendar",    icon:"▦", label:"Calendário"},
     {id:"analytics",   icon:"▲", label:"Analytics"},
     {id:"competitors", icon:"◉", label:"Concorrentes"},
+    {id:"movies",      icon:"★", label:"Filmes"},
     {id:"news",        icon:"◫", label:"Notícias"},
   ];
 
-  const unreadNews = news.filter(n=>!n.read).length;
+  // Badge conta só notícias não lidas das últimas 24h
+  const unreadNews = (newsApi.data?.items||[]).filter(n=>!readIds.includes(n.id)&&Date.now()-new Date(n.publishedAt)<86400000).length;
+  const igProfile = ig.data?.profile;
+  const overviewReach = (ig.data?.series?.reach||[]).map(x=>({d:fmtDay(x.date), v:x.value}));
 
   return (
     <div style={{background:C.bg,color:C.text1,fontFamily:C.fontBody,display:"flex",height:"100vh",overflow:"hidden",position:"relative"}}>
@@ -987,12 +1091,12 @@ export default function App() {
       <MouseGlow/>
 
       {/* ── SIDEBAR ── */}
-      <aside className="glass" style={{borderRight:`1px solid rgba(224,64,251,0.08)`,width:col?60:228,flexShrink:0,display:"flex",flexDirection:"column",transition:"width 0.25s cubic-bezier(.4,0,.2,1)",overflow:"hidden",position:"relative",zIndex:10}}>
+      <aside className="glass" style={{borderRight:`1px solid rgba(201,169,79,0.08)`,width:col?60:228,flexShrink:0,display:"flex",flexDirection:"column",transition:"width 0.25s cubic-bezier(.4,0,.2,1)",overflow:"hidden",position:"relative",zIndex:10}}>
         {/* Logo */}
         <div style={{borderBottom:`1px solid ${C.border}`,padding:col?"14px 10px":"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:64}}>
           {col
-            ? <div className="metal-text" style={{fontFamily:C.font,fontSize:15,fontWeight:900,letterSpacing:"0.08em",margin:"0 auto"}}>CNX</div>
-            : <img src="/logo-cinex-gradient.png" alt="Cinex Cinemas" style={{height:38,objectFit:"contain"}}/>
+            ? <img src="/au-symbol.svg" alt="Aurum Cinema" style={{height:26,margin:"0 auto"}}/>
+            : <img src="/logo-aurum-branca.svg" alt="Aurum Cinema" style={{height:44,objectFit:"contain"}}/>
           }
           {!col&&<button onClick={()=>setCol(s=>!s)} style={{color:C.text3,fontSize:10,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",borderRadius:6,width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center"}}>◀</button>}
         </div>
@@ -1009,7 +1113,7 @@ export default function App() {
                 <span style={{fontSize:14}}>{item.icon}</span>
                 {!col&&<span>{item.label}</span>}
                 {showBadge&&(
-                  <span style={{marginLeft:"auto",background:C.accent,color:"#0A0010",fontFamily:C.font,fontSize:9,fontWeight:900,padding:"2px 6px",borderRadius:99,minWidth:18,textAlign:"center"}}>
+                  <span style={{marginLeft:"auto",background:C.accent,color:"#1B1408",fontFamily:C.font,fontSize:9,fontWeight:900,padding:"2px 6px",borderRadius:99,minWidth:18,textAlign:"center"}}>
                     {unreadNews}
                   </span>
                 )}
@@ -1020,19 +1124,23 @@ export default function App() {
 
         {/* Footer */}
         {!col&&<div style={{borderTop:`1px solid ${C.border}`,padding:"12px 18px"}}>
-          <div style={{color:C.text3,fontSize:10,fontFamily:C.font,fontWeight:600}}>cinexcinemas.com.br</div>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:ig.data?C.success:ig.loading?C.accent:C.warn}}/>
+            <span style={{color:C.text3,fontSize:10,fontFamily:C.font,fontWeight:600}}>Instagram {ig.data?"conectado":ig.loading?"conectando":"offline"}</span>
+          </div>
+          <a href="https://www.aurumcinema.com.br" target="_blank" rel="noreferrer" style={{color:C.text3,fontSize:10,fontFamily:C.font,fontWeight:600,textDecoration:"none"}}>aurumcinema.com.br ↗</a>
         </div>}
       </aside>
 
       {/* ── MAIN ── */}
       <main style={{flex:1,overflowY:"auto",position:"relative",zIndex:5}}>
         {/* Topbar */}
-        <div className="glass" style={{borderBottom:`1px solid rgba(224,64,251,0.06)`,position:"sticky",top:0,zIndex:10,padding:"14px 28px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div className="glass" style={{borderBottom:`1px solid rgba(201,169,79,0.06)`,position:"sticky",top:0,zIndex:10,padding:"14px 28px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div>
-            <h1 style={{fontFamily:C.font,color:C.text1,fontSize:18,fontWeight:900,margin:0,letterSpacing:"-0.02em"}}>
+            <h1 style={{fontFamily:C.display,color:C.text1,fontSize:18,fontWeight:700,margin:0,letterSpacing:"0.02em"}}>
               {nav.find(n=>n.id===view)?.label}
             </h1>
-            <p style={{color:C.text3,fontSize:11,margin:0,marginTop:2,fontFamily:C.fontBody}}>Cinex Cinemas · @cinex.goiania</p>
+            <p style={{color:C.text3,fontSize:11,margin:0,marginTop:2,fontFamily:C.fontBody}}>Aurum Cinema · @aurum.cinema</p>
           </div>
           {view==="projects"&&(
             <button className="glow-btn" onClick={()=>openModal("project")}
@@ -1052,78 +1160,96 @@ export default function App() {
 
           {/* ── OVERVIEW ── */}
           {view==="overview"&&<>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:28}}>
-              <StatCard label="Em execução"    value={stats.active}    accent={C.accent}  chart/>
-              <StatCard label="Concluídos"     value={stats.done}      accent={C.success} chart/>
-              <StatCard label="Urgentes"       value={stats.urgent}    accent={C.danger}  chart/>
-              <StatCard label="Total Projetos" value={stats.total}     accent={C.info}    chart/>
-              <StatCard label="Tasks abertas"  value={stats.topen}     accent="#C084FC"   chart/>
-              <StatCard label="Tasks feitas"   value={stats.tdone}     accent={C.success} chart/>
-              <StatCard label="Conteúdos"      value={stats.ctotal}    accent="#E1306C"   chart/>
-              <StatCard label="Agendados"      value={stats.scheduled} accent={C.accent}  chart/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:16,marginBottom:28}}>
+              <StatCard label="Em execução"    value={stats.active}    accent={C.accent}/>
+              <StatCard label="Concluídos"     value={stats.done}      accent={C.success}/>
+              <StatCard label="Urgentes"       value={stats.urgent}    accent={C.danger}/>
+              <StatCard label="Total Projetos" value={stats.total}     accent={C.info}/>
+              <StatCard label="Tasks abertas"  value={stats.topen}     accent={C.champagne}/>
+              <StatCard label="Tasks feitas"   value={stats.tdone}     accent={C.success}/>
+              <StatCard label="Conteúdos"      value={stats.ctotal}    accent={C.wine}/>
+              <StatCard label="Agendados"      value={stats.scheduled} accent={C.accentHi}/>
             </div>
 
             {/* Instagram + Mix */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
-              <div className="glass" style={{borderRadius:18,padding:22,display:"flex",alignItems:"center",gap:20}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(340px,1fr))",gap:16,marginBottom:16}}>
+              <div className="glass" style={{borderRadius:18,padding:22,display:"flex",alignItems:"center",gap:20,cursor:"pointer"}} onClick={()=>setView("analytics")}>
                 <div style={{flex:1}}>
-                  <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,marginBottom:6,textTransform:"uppercase"}}>Seguidores Instagram</div>
-                  <div style={{color:C.accent,fontFamily:C.font,fontSize:38,fontWeight:900,letterSpacing:"-0.03em",lineHeight:1}}>24.3K</div>
-                  <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
-                    <span style={{color:C.success,fontSize:12,fontWeight:800}}>↑ 6.6%</span>
-                    <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>vs mês anterior</span>
-                  </div>
+                  <div style={{...sectionLabel,marginBottom:6}}>Seguidores Instagram</div>
+                  <div style={{color:C.accent,fontFamily:C.display,fontSize:36,fontWeight:700,lineHeight:1}}>{ig.loading?"…":fmtNum(igProfile?.followers_count)}</div>
+                  <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginTop:8}}>{igProfile?`@${igProfile.username}`:ig.loading?"conectando...":"Instagram não conectado"}</div>
                 </div>
                 <div style={{width:1,height:60,background:C.border}}/>
                 <div style={{flex:1}}>
-                  <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,marginBottom:6,textTransform:"uppercase"}}>Engajamento</div>
-                  <div style={{color:"#C084FC",fontFamily:C.font,fontSize:38,fontWeight:900,letterSpacing:"-0.03em",lineHeight:1}}>6.58%</div>
-                  <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
-                    <span style={{color:C.success,fontSize:12,fontWeight:800}}>↑ 0.38pp</span>
-                    <span style={{color:C.text3,fontSize:11,fontFamily:C.fontBody}}>vs mês anterior</span>
-                  </div>
+                  <div style={{...sectionLabel,marginBottom:6}}>Alcance · 28d</div>
+                  <div style={{color:C.champagne,fontFamily:C.display,fontSize:36,fontWeight:700,lineHeight:1}}>{ig.loading?"…":fmtNum(ig.data?.totals?.reach)}</div>
+                  <div style={{color:C.text3,fontSize:11,fontFamily:C.fontBody,marginTop:8}}>engajamento {fmtPct(ig.data?.engagementRate)}</div>
                 </div>
               </div>
 
               <div className="glass" style={{borderRadius:18,padding:22}}>
-                <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>Mix de Conteúdo</div>
-                <ResponsiveContainer width="100%" height={130}>
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={58} paddingAngle={4} dataKey="value">
-                      {pieData.map((e,i) => <Cell key={i} fill={e.color} stroke="transparent"/>)}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip/>}/>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{display:"flex",flexDirection:"column",gap:5,marginTop:10}}>
-                  {pieData.map(d => (
-                    <div key={d.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:7}}>
-                        <div style={{width:6,height:6,borderRadius:"50%",background:d.color}}/>
-                        <span style={{color:C.text2,fontSize:11,fontFamily:C.fontBody}}>{d.name}</span>
+                <div style={{...sectionLabel,marginBottom:16}}>Mix de Conteúdo (planejado)</div>
+                <div style={{display:"flex",alignItems:"center",gap:16}}>
+                  <div style={{width:130,height:130,flexShrink:0}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={58} paddingAngle={4} dataKey="value">
+                          {pieData.map((e,i) => <Cell key={i} fill={e.color} stroke="transparent"/>)}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip/>}/>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:6,flex:1}}>
+                    {pieData.map(d => (
+                      <div key={d.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:7}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:d.color}}/>
+                          <span style={{color:C.text2,fontSize:11,fontFamily:C.fontBody}}>{d.name}</span>
+                        </div>
+                        <span style={{color:d.color,fontSize:11,fontFamily:C.font,fontWeight:800}}>{d.value}%</span>
                       </div>
-                      <span style={{color:d.color,fontSize:11,fontFamily:C.font,fontWeight:800}}>{d.value}%</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Crescimento seguidores chart */}
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:22}}>
-              <div style={{color:C.text2,fontSize:10,letterSpacing:"0.12em",fontFamily:C.font,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>Crescimento de Seguidores / Mês</div>
-              <ResponsiveContainer width="100%" height={160}>
-                <AreaChart data={igFollowerHistory}>
-                  <defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.accent} stopOpacity={0.3}/>
-                    <stop offset="100%" stopColor={C.accent} stopOpacity={0}/>
-                  </linearGradient></defs>
-                  <XAxis dataKey="m" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false}/>
-                  <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}K`}/>
-                  <Tooltip content={<CustomTooltip/>}/>
-                  <Area type="monotone" dataKey="v" name="Seguidores" stroke={C.accent} strokeWidth={2} fill="url(#aG)" dot={false}/>
-                </AreaChart>
-              </ResponsiveContainer>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(340px,1fr))",gap:16}}>
+              {/* Alcance diário */}
+              <div className="glass" style={{borderRadius:18,padding:22}}>
+                <div style={{...sectionLabel,marginBottom:16}}>Alcance diário — Instagram</div>
+                {overviewReach.length ? (
+                  <ResponsiveContainer width="100%" height={180}>
+                    <AreaChart data={overviewReach}>
+                      <defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={C.accent} stopOpacity={0.3}/>
+                        <stop offset="100%" stopColor={C.accent} stopOpacity={0}/>
+                      </linearGradient></defs>
+                      <XAxis dataKey="d" tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={24}/>
+                      <YAxis tick={{fill:C.text3,fontSize:11,fontFamily:C.font}} axisLine={false} tickLine={false} tickFormatter={fmtNum} width={44}/>
+                      <Tooltip content={<CustomTooltip/>}/>
+                      <Area type="monotone" dataKey="v" name="Alcance" stroke={C.accent} strokeWidth={2} fill="url(#aG)" dot={false}/>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : <EmptyState height={180}>{ig.loading?"Carregando...":"Conecte o Instagram para ver o alcance diário."}</EmptyState>}
+              </div>
+
+              {/* Últimas notícias */}
+              <div className="glass" style={{borderRadius:18,padding:22}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                  <div style={sectionLabel}>Últimas do setor</div>
+                  <button onClick={()=>setView("news")} style={{background:"transparent",border:"none",color:C.accent,fontSize:11,fontFamily:C.font,fontWeight:700,cursor:"pointer"}}>ver todas →</button>
+                </div>
+                {(newsApi.data?.items||[]).slice(0,5).map(n => (
+                  <a key={n.id} href={n.link} target="_blank" rel="noreferrer" onClick={()=>!readIds.includes(n.id)&&toggleRead(n.id)}
+                    style={{display:"block",padding:"8px 0",borderBottom:`1px solid ${C.border}`,textDecoration:"none"}}>
+                    <div style={{color:readIds.includes(n.id)?C.text3:C.text1,fontSize:12,fontFamily:C.font,fontWeight:600,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{n.title}</div>
+                    <div style={{color:C.text3,fontSize:10,fontFamily:C.fontBody,marginTop:2}}>{n.source} · {timeAgo(n.publishedAt)}</div>
+                  </a>
+                ))}
+                {!newsApi.data && <EmptyState height={150}>{newsApi.loading?"Carregando notícias...":"Notícias indisponíveis."}</EmptyState>}
+              </div>
             </div>
           </>}
 
@@ -1144,13 +1270,16 @@ export default function App() {
           {view==="calendar"&&<CalendarView content={content}/>}
 
           {/* ── ANALYTICS (Instagram real) ── */}
-          {view==="analytics"&&<AnalyticsView/>}
+          {view==="analytics"&&<AnalyticsView ig={ig}/>}
 
           {/* ── COMPETITORS ── */}
-          {view==="competitors"&&<CompetitorsView competitors={competitors} onAdd={()=>openModal("competitor")}/>}
+          {view==="competitors"&&<CompetitorsView competitors={competitors} ig={ig} onAdd={()=>openModal("competitor")} onRemove={removeCompetitor}/>}
+
+          {/* ── MOVIES (TMDB) ── */}
+          {view==="movies"&&<MoviesView movies={movies}/>}
 
           {/* ── NEWS ── */}
-          {view==="news"&&<NewsView news={news} onToggleRead={toggleRead}/>}
+          {view==="news"&&<NewsView newsApi={newsApi} readIds={readIds} onToggleRead={toggleRead}/>}
 
         </div>
       </main>
@@ -1200,9 +1329,9 @@ export default function App() {
           </>}
 
           {modal==="competitor"&&<>
-            <Field label="Nome / Marca"><input style={inputSt} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Ex: Cinépolis Goiânia" onFocus={e=>e.target.style.borderColor=C.borderHi} onBlur={e=>e.target.style.borderColor=C.border}/></Field>
+            <Field label="Nome / Marca"><input style={inputSt} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Ex: Cinemark Flamboyant" onFocus={e=>e.target.style.borderColor=C.borderHi} onBlur={e=>e.target.style.borderColor=C.border}/></Field>
             <Field label="Plataforma"><select style={{...inputSt,cursor:"pointer"}} value={form.platform||"instagram"} onChange={e=>setForm(f=>({...f,platform:e.target.value}))}>{PLATFORMS.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}</select></Field>
-            <Field label="Handle / @username"><input style={inputSt} value={form.handle||""} onChange={e=>setForm(f=>({...f,handle:e.target.value}))} placeholder="Ex: cinepolisbrasil (sem @)" onFocus={e=>e.target.style.borderColor=C.borderHi} onBlur={e=>e.target.style.borderColor=C.border}/></Field>
+            <Field label="Handle / @username"><input style={inputSt} value={form.handle||""} onChange={e=>setForm(f=>({...f,handle:e.target.value}))} placeholder="Ex: cinemarkoficial (sem @)" onFocus={e=>e.target.style.borderColor=C.borderHi} onBlur={e=>e.target.style.borderColor=C.border}/></Field>
             <Field label="Localização"><input style={inputSt} value={form.location||""} onChange={e=>setForm(f=>({...f,location:e.target.value}))} placeholder="Ex: Shopping Flamboyant" onFocus={e=>e.target.style.borderColor=C.borderHi} onBlur={e=>e.target.style.borderColor=C.border}/></Field>
           </>}
 

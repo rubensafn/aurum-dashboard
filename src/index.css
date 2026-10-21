@@ -1,47 +1,19 @@
-/* ── BRINNAN FONT ── */
-@font-face {
-  font-family: 'Brinnan';
-  src: url('/fonts/Brinnan-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Brinnan';
-  src: url('/fonts/Brinnan-Light.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Brinnan';
-  src: url('/fonts/Brinnan-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Brinnan';
-  src: url('/fonts/Brinnan-Black.otf') format('opentype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
+/* Fontes Aurum (Cinzel + Inter) carregadas via Google Fonts em index.html */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #090310;
-  color: #F0EAFF;
-  font-family: 'Brinnan', 'Segoe UI', sans-serif;
+  background: #0c0b09;
+  color: #f3efe9;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2D1050; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #4A1A80; }
+::-webkit-scrollbar-thumb { background: #3a3220; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #c9a94f; }
 
 /* ── BLOB MORPH ── */
 @keyframes blob1 {
@@ -79,36 +51,36 @@ body {
 
 /* ── GLASS CARD ── */
 .glass {
-  background: rgba(224, 64, 251, 0.03);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(224, 64, 251, 0.08);
+  background: rgba(201, 169, 79, 0.03);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(201, 169, 79, 0.09);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.05),
     inset 0 -1px 0 rgba(0,0,0,0.3),
     0 24px 48px rgba(0,0,0,0.6);
 }
 
 .glass:hover {
-  background: rgba(224, 64, 251, 0.05);
-  border-color: rgba(224, 64, 251, 0.14);
+  background: rgba(201, 169, 79, 0.05);
+  border-color: rgba(201, 169, 79, 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.08),
     inset 0 -1px 0 rgba(0,0,0,0.3),
     0 32px 64px rgba(0,0,0,0.7);
 }
 
-/* ── METAL TEXT (magenta) ── */
+/* ── METAL TEXT (ouro) ── */
 .metal-text {
   background: linear-gradient(
     90deg,
-    #E040FB 0%,
-    #F580FF 30%,
-    #FFFFFF 45%,
-    #F580FF 55%,
-    #E040FB 70%,
-    #BF22E0 85%,
-    #E040FB 100%
+    #a07830 0%,
+    #c9a94f 30%,
+    #f0d878 45%,
+    #daa520 55%,
+    #c9a94f 70%,
+    #a07830 85%,
+    #c9a94f 100%
   );
   background-size: 300% auto;
   -webkit-background-clip: text;
@@ -122,11 +94,11 @@ body {
   animation: fadeInUp 0.4s ease both;
 }
 
-/* ── GLOW BUTTON ── */
+/* ── GLOW BUTTON (ouro) ── */
 .glow-btn {
   position: relative;
-  background: #E040FB;
-  color: #0A0010;
+  background: linear-gradient(110deg, #d7b853, #b38b2d 65%, #d7b853);
+  color: #1b1408;
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.15s;
 }
@@ -140,7 +112,7 @@ body {
   pointer-events: none;
 }
 .glow-btn:hover {
-  box-shadow: 0 0 28px rgba(224,64,251,0.6), 0 0 60px rgba(224,64,251,0.25);
+  box-shadow: 0 0 28px rgba(218,165,32,0.45), 0 0 60px rgba(201,169,79,0.2);
   transform: translateY(-1px);
 }
 .glow-btn:active { transform: translateY(0); }
@@ -151,8 +123,12 @@ body {
   100% { background-position: 468px 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #1A0830 25%, #2D1050 50%, #1A0830 75%);
+  background: linear-gradient(90deg, #1d1a14 25%, #2a251b 50%, #1d1a14 75%);
   background-size: 800px 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

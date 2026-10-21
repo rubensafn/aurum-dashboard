@@ -1,22 +1,23 @@
-# Cinex Dashboard — CLAUDE.md
+# Aurum Cinema Dashboard — CLAUDE.md
 
 ## Stack
-- React 19 + Vite 8
+- React 19 + Vite 5
 - Recharts para gráficos
 - Deploy: Vercel
-- Domínio: dashboard.cinexcinemas.com.br (a definir)
+- Domínio: a definir (site institucional: aurumcinema.com.br)
 
 ## Cliente
-- Cinex Cinemas — Goiânia, GO
-- Instagram: @cinex.goiania
-- Fonte: Brinnan (todas as variações em /src/fonts/)
-- Cores: roxo profundo (#090310) + magenta (#E040FB)
+- Aurum Cinema — Av. Dep. Jamel Cecílio, KM 01, Jardim Goiás, Goiânia/GO
+- Instagram: @aurum.cinema
+- Fontes: Cinzel (títulos/números, `C.display`) + Inter (interface, `C.font`) — Google Fonts em index.html
+- Paleta oficial: #1B1B1B · ouro #DAA520 · areia #C9A94F · creme #F3EFE9 · vinho #4A1625 · verde #032B2A
+- Brandkit: `C:/Users/ruben/aurum-brandkit-final`
 
 ## Fluxo de branches
 
 | Branch | Ambiente | URL |
 |--------|----------|-----|
-| `main` | Produção | dashboard.cinexcinemas.com.br |
+| `main` | Produção | (a definir) |
 | `dev`  | Preview  | URL automática Vercel |
 
 ### Regra: nunca commitar direto na `main`. Sempre trabalhar na `dev`.
@@ -35,28 +36,25 @@ git checkout main && git merge dev && git push && git checkout dev
 ```
 src/
   App.jsx        # Toda a aplicação (único arquivo)
-  index.css      # Estilos globais + font-face Brinnan
+  index.css      # Estilos globais (glass, metal-text dourado, glow-btn)
   main.jsx       # Entry point
-  fonts/         # Brinnan Regular, Bold, Black, Light
 public/
-  favicon.png          # Ícone Cinex
-  logo-cinex-gradient.png  # Logo com fundo gradiente roxo
-  logo-cinex-branca.png    # Logo versão branca
+  favicon.svg / favicon.png   # Símbolo AU
+  logo-aurum-branca.svg       # Logo Aurum Cinema (branca, sidebar)
+  au-symbol.svg               # Símbolo AU dourado (sidebar recolhida)
 api/
-  instagram.js   # Vercel Serverless — proxy Instagram Graph API
+  _lib/graph.js  # Helpers Graph API (não vira rota)
+  instagram.js   # status | summary | competitors (business_discovery)
+  news.js        # Google News RSS — sem chave
 ```
 
-## Instagram API (dados reais)
+## Integrações
 
-Para ativar os dados reais do @cinex.goiania:
-
-1. Acesse developers.facebook.com → criar app
-2. Adicionar produto: Instagram Graph API
-3. Conectar conta business @cinex.goiania
-4. Gerar long-lived access token
-5. Adicionar nas variáveis de ambiente do Vercel:
-   - `INSTAGRAM_ACCESS_TOKEN`
-   - `INSTAGRAM_ACCOUNT_ID`
+Passo a passo completo no README.md. Resumo:
+- `INSTAGRAM_ACCESS_TOKEN` no Vercel — preferir System User token (EAA…, não expira, libera concorrentes)
+- `INSTAGRAM_ACCOUNT_ID` opcional (descoberto pela Página vinculada)
+- Notícias não precisam de chave
+- `npm run dev` não executa /api — usar `vercel dev` para testar integrações
 
 ## Módulos do dashboard
 
@@ -66,17 +64,19 @@ Para ativar os dados reais do @cinex.goiania:
 | Projetos | Kanban de campanhas com 11 status + drag & drop |
 | Conteúdo | Gestor de posts por plataforma |
 | Calendário | Visualização mensal de conteúdo agendado |
-| Analytics | Instagram real (@cinex.goiania) + gráficos |
-| Concorrentes | Cinemas concorrentes em Goiânia |
-| Notícias | Notícias reais do setor cinematográfico |
+| Analytics | Instagram real (@aurum.cinema) — alcance, views, seguidores, posts |
+| Concorrentes | Cinemas de Goiânia com métricas ao vivo (business_discovery) |
+| Filmes | TMDB — em alta, em cartaz BR, próximas estreias (`TMDB_API_KEY`) |
+| Notícias | Google News RSS por categoria (inclui Em alta e Críticas), com busca e marcação de lidas |
 
 ## Cores principais
 
 ```js
-accent:  "#E040FB"  // magenta (cor do X no logo)
-bg:      "#090310"  // roxo-preto (fundo)
-surface: "#120520"  // surface dos cards
-text1:   "#F0EAFF"  // texto principal
+accent:  "#C9A94F"  // areia/ouro
+accentHi:"#DAA520"  // ouro
+bg:      "#0C0B09"  // fundo
+surface: "#14120E"  // surface dos cards
+text1:   "#F3EFE9"  // creme
 ```
 
 ## Deploy
